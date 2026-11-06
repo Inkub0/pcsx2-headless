@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Downloads a cover for every game in PCSX2's game list that doesn't have one yet.
+# Serials come from PCSX2's own game list cache, so ISO, CHD and CSO all work.
+# Covers are saved as <SERIAL>.<ext> in PCSX2's covers folder, which PCSX2 looks up by serial.
+# Runs as the pcsx2 user. Existing covers are never replaced.
+set -euo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+
+data=${XDG_CONFIG_HOME:-/config/.config}/PCSX2
+ini=$data/inis/PCSX2.ini
+
+# Folder from [Folders] in PCSX2.ini; relative paths are relative to the data folder.
+pcsx2_dir() {
+    local v=""
+    [ -f "$ini" ] && v=$(crudini --get "$ini" Folders "$1" 2>/dev/null || true)
+    [ -n "$v" ] || v=$2
+    case $v in /*) echo "$v" ;; *) echo "$data/$v" ;; esac
+}
+covers=$(pcsx2_dir Covers covers)
+cache=$(pcsx2_dir Cache cache)/gamelist.cache
+
+base=https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers
+case ${PCSX2_COVERS_STYLE:-default} in
+    default) template="$base/default/\${serial}.jpg" ;;
+    3d)      template="$base/3d/\${serial}.png" ;;
+    *) die "PCSX2_COVERS_STYLE must be default or 3d (got '${PCSX2_COVERS_STYLE}')" ;;
+esac
+template=${PCSX2_COVERS_URL:-$template}
+case $template in *'${serial}'*) ;; *) die "PCSX2_COVERS_URL must contain \${serial}" ;; esac
+
+# Wait for PCSX2 to scan the games: the cache must exist and stay unchanged for 15 s.
+wait_max=${COVERS_WAIT_MAX:-600}
+stable_for=${COVERS_STABLE_SECS:-15}
+waited=0 last="" stable=0
+while [ "$waited" -lt "$wait_max" ]; do
+    if [ -s "$cache" ]; then
+        now=$(stat -c '%s.%Y' "$cache")
+        if [ "$now" = "$last" ]; then
+            stable=$((stable + 5))
+            [ "$stable" -ge "$stable_for" ] && break
+        else
+            last=$now stable=0
+        fi
+    fi
+    sleep 5
+    waited=$((waited + 5))
+done
+[ -s "$cache" ] || { warn "Covers: PCSX2 has not built its game list yet ($cache); skipping"; exit 0; }
+
+mkdir -p "$covers"
+mapfile -t serials < <(grep -aoE '[A-Z]{4}-[0-9]{5}' "$cache" | sort -u)
+got=0 have=0 missing=()
+for serial in "${serials[@]}"; do
+    if compgen -G "$covers/$serial.*" >/dev/null; then
+        have=$((have + 1))
+        continue
+    fi
+    url=${template//\$\{serial\}/$serial}
+    ext=${url##*/}; ext=${ext##*.}; ext=${ext%%\?*}
+    tmp=$covers/.$serial.part
+    if curl -fsL --retry 2 --max-time 30 -o "$tmp" "$url"; then
+        mv -f "$tmp" "$covers/$serial.$ext"
+        got=$((got + 1))
+    else
+        rm -f "$tmp"
+        missing+=("$serial")
+    fi
+done
+log "Covers: ${#serials[@]} games, $got downloaded, $have already had one, ${#missing[@]} not available"
+[ "${#missing[@]}" -eq 0 ] || log "No cover available for: ${missing[*]}"
+[ "$got" -eq 0 ] || log "New covers show up after PCSX2 restarts (Moonlight: 'Restart PCSX2')"

@@ -49,6 +49,9 @@ No BIOS or games are included. Dump them from hardware you own.
 | `PCSX2_RENDERER` | `14` | `14` Vulkan, `12` OpenGL, `13` software. Applied on every start when set |
 | `PCSX2_UPSCALE` | `3` | Internal resolution multiplier. Applied on every start when set |
 | `PCSX2_ARGS` | empty | Extra PCSX2 command-line arguments |
+| `PCSX2_COVERS` | `false` | `true` downloads missing covers for your games on start (from [xlenore/ps2-covers](https://github.com/xlenore/ps2-covers)); they show after PCSX2 restarts |
+| `PCSX2_COVERS_STYLE` | `default` | `default` (flat) or `3d` box art |
+| `PCSX2_COVERS_URL` | empty | Your own cover source; must contain `${serial}` |
 | `SUNSHINE_ENCODER` | auto | Override Sunshine's encoder (`vaapi`, `nvenc`, `software`) |
 | `ENABLE_UDEV` | `true` | Needed for Moonlight keyboard/mouse. Controllers work without it |
 | `INPUT_GID` | auto | Host gid of `/dev/input` nodes, if auto-detection guesses wrong |

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# One-shot: downloads cover art for the games PCSX2 has found (PCSX2_COVERS=true).
+set -euo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+
+if ! is_true "${PCSX2_COVERS:-false}"; then
+    exit 0
+fi
+exec_as_user /usr/local/bin/fetch-covers
