@@ -3,7 +3,7 @@
 # Change every line marked  # <-  first.
 services:
   pcsx2-headless:
-    image: ghcr.io/inkub0/pcsx2-headless:sha-8e2d6b8   # <- your published image
+    image: ghcr.io/inkub0/pcsx2-headless:sha-8e2d6b8
     container_name: pcsx2-headless
     hostname: pcsx2-headless
     restart: unless-stopped
@@ -31,9 +31,9 @@ services:
       GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
       TEARFREE: "true"
     volumes:
-      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/PCSX2-CFG:/config     # <- settings, memory cards, saves, pairing
-      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/bios:/bios:ro         # <- folder with your PS2 BIOS dump
-      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/DVD:/games:ro        # <- folder with your ISO/CHD files
+      - /mnt/MiuzzoData/SOFTWARE/EMU-ROMS/PS2/PCSX2-CFG:/config     # <- settings, memory cards, saves, pairing
+      - /mnt/MiuzzoData/SOFTWARE/EMU-ROMS/PS2/bios:/bios:ro         # <- folder with your PS2 BIOS dump
+      - /mnt/MiuzzoData/SOFTWARE/EMU-ROMS/PS2/DVD:/games:ro        # <- folder with your ISO/CHD files
       - /dev/input:/dev/input
     healthcheck:
       test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/47990"]   # TCP only: the web UI answers 401 without login
