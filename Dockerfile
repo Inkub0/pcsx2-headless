@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
         libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xinput0 \
         libxcb-xkb1 libfontconfig1 libfreetype6 libdbus-1-3 libasound2t64 libpulse0 libudev1 \
+        libgpg-error0 libx11-xcb1 libxi6 libxrandr2 libsm6 libice6 libusb-1.0-0 \
         fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
@@ -67,7 +68,15 @@ RUN --mount=type=secret,id=github_token \
     cd /opt; /tmp/pcsx2.AppImage --appimage-extract >/dev/null; \
     mv squashfs-root pcsx2; \
     echo "$url" > /opt/pcsx2/.source; \
-    rm /tmp/pcsx2.AppImage
+    rm /tmp/pcsx2.AppImage; \
+    # The AppImage leaves some libraries (e.g. libgpg-error) to the system. Fail the build,
+    # listing them, instead of finding out at runtime ("error while loading shared libraries").
+    libdirs=$(find /opt/pcsx2 -name '*.so*' -printf '%h\n' | sort -u | paste -sd:); \
+    missing=$( { find /opt/pcsx2/usr/bin /opt/pcsx2/usr/lib /opt/pcsx2/usr/plugins/platforms \
+                    -maxdepth 1 -type f -print0 2>/dev/null \
+                 | xargs -0 -r env LD_LIBRARY_PATH="$libdirs" ldd 2>/dev/null || true; } \
+               | awk '/=> not found/ {print $1}' | sort -u | paste -sd' '); \
+    if [ -n "$missing" ]; then echo "PCSX2 needs libraries missing from the image: $missing" >&2; exit 1; fi
 
 RUN groupadd -g 568 pcsx2 \
     && useradd -u 568 -g 568 -d /config -M -s /bin/bash pcsx2
@@ -81,7 +90,9 @@ VOLUME ["/config"]
 # Sunshine / Moonlight. With host networking these are informational only.
 EXPOSE 47984/tcp 47989/tcp 47990/tcp 48010/tcp 47998/udp 47999/udp 48000/udp
 
+# Plain TCP check: the web UI answers 401 without a login, which curl -f treats as a failure
+# (and it spams Sunshine's log with "not authorized").
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
-    CMD curl -kfsS -o /dev/null https://127.0.0.1:47990/ || exit 1
+    CMD bash -c '</dev/tcp/127.0.0.1/47990' || exit 1
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint"]
