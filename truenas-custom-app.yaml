@@ -31,9 +31,9 @@ services:
       GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
       TEARFREE: "true"
     volumes:
-      - /mnt/tank/apps/pcsx2-headless:/config     # <- settings, memory cards, saves, pairing
-      - /mnt/tank/games/ps2/bios:/bios:ro         # <- folder with your PS2 BIOS dump
-      - /mnt/tank/games/ps2/isos:/games:ro        # <- folder with your ISO/CHD files
+      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/PCSX2-CFG:/config     # <- settings, memory cards, saves, pairing
+      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/bios:/bios:ro         # <- folder with your PS2 BIOS dump
+      - /mnt/MiuzzoData/software/EMU-ROMS/PS2/DVD:/games:ro        # <- folder with your ISO/CHD files
       - /dev/input:/dev/input
     healthcheck:
       test: ["CMD", "curl", "-kfsS", "-o", "/dev/null", "https://127.0.0.1:47990/"]
