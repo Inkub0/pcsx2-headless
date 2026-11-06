@@ -3,7 +3,7 @@
 # Change every line marked  # <-  first.
 services:
   pcsx2-headless:
-    image: ghcr.io/inkub0/pcsx2-headless:latest   # <- your published image
+    image: ghcr.io/inkub0/pcsx2-headless:sha-8e2d6b8   # <- your published image
     container_name: pcsx2-headless
     hostname: pcsx2-headless
     restart: unless-stopped
@@ -36,7 +36,7 @@ services:
       - /mnt/MiuzzoData/software/EMU-ROMS/PS2/DVD:/games:ro        # <- folder with your ISO/CHD files
       - /dev/input:/dev/input
     healthcheck:
-      test: ["CMD", "curl", "-kfsS", "-o", "/dev/null", "https://127.0.0.1:47990/"]
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/47990"]   # TCP only: the web UI answers 401 without login
       interval: 30s
       timeout: 5s
       start_period: 120s
