@@ -6,7 +6,7 @@ USER_RUNTIME_DIR=/tmp/runtime-pcsx2
 PULSE_SOCKET=$USER_RUNTIME_DIR/pulse/native
 export DISPLAY=:0
 
-log()  { echo "[pcsx2-headless] $*"; }
+log()  { echo "[pcsx2-headless] $*" >&2; }   # stderr: never pollute redirected output (e.g. xorg.conf)
 warn() { echo "[pcsx2-headless] WARNING: $*" >&2; }
 die()  { echo "[pcsx2-headless] ERROR: $*" >&2; exit 1; }
 
