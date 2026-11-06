@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. /usr/local/lib/pcsx2-headless/common.sh
+
+rm -rf "$USER_RUNTIME_DIR/pulse"
+as_user mkdir -p "$USER_RUNTIME_DIR/pulse"
+exec_as_user pulseaudio \
+    --daemonize=no --exit-idle-time=-1 --disallow-exit \
+    --log-target=stderr --log-level=notice \
+    -n -F /etc/pulse/pcsx2-headless.pa

@@ -1,0 +1,6 @@
+# PulseAudio for PCSX2 Headless: one virtual output that Sunshine captures.
+.fail
+load-module module-native-protocol-unix auth-anonymous=1 socket=/tmp/runtime-pcsx2/pulse/native
+load-module module-null-sink sink_name=virtual_out sink_properties=device.description=Virtual_Output
+set-default-sink virtual_out
+load-module module-always-sink

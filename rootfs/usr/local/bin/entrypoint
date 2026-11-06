@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+# PCSX2 Headless entrypoint.
+# Runs as root: prepares the user, device permissions, GPU driver, Xorg config and
+# app configs, then hands over to supervisord, which starts every service.
+set -euo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+
+log "PCSX2 Headless $(cat /etc/pcsx2-headless-version 2>/dev/null || echo dev)"
+log "PCSX2:    $(cat /opt/pcsx2/.source 2>/dev/null || echo unknown)"
+log "Sunshine: $(cat /etc/sunshine-source 2>/dev/null || echo unknown)"
+
+PUID=${PUID:-568}
+PGID=${PGID:-568}
+export PUID PGID
+
+# ---------------------------------------------------------------- user ----
+groupmod -o -g "$PGID" pcsx2
+usermod -o -u "$PUID" -g "$PGID" pcsx2 >/dev/null
+
+mkdir -p "$RUNTIME_DIR" "$USER_RUNTIME_DIR" /config
+chown "$PUID:$PGID" "$USER_RUNTIME_DIR"
+chmod 0700 "$USER_RUNTIME_DIR"
+if ! setpriv --reuid="$PUID" --regid="$PGID" --clear-groups test -w /config; then
+    chown "$PUID:$PGID" /config 2>/dev/null \
+        || die "/config is not writable by UID $PUID. Give that user (TrueNAS: 'apps') write access to the config dataset."
+fi
+
+# ------------------------------------------------------- device groups ----
+# Make the container's "input" group use the host's input gid, so udev rules inside
+# the container never re-own the host's /dev/input nodes to a different group.
+host_input_gid=${INPUT_GID:-}
+if [ -z "$host_input_gid" ]; then
+    for ev in /dev/input/event*; do
+        [ -e "$ev" ] || continue
+        host_input_gid=$(stat -c %g "$ev")
+        break
+    done
+fi
+if [ -n "$host_input_gid" ] && [ "$host_input_gid" != 0 ] && ! getent group "$host_input_gid" >/dev/null; then
+    groupmod -o -g "$host_input_gid" input
+fi
+
+declare -A joined=()
+join_group_of() {
+    local dev=$1 gid name
+    [ -e "$dev" ] || return 0
+    gid=$(stat -c %g "$dev")
+    [ "$gid" = 0 ] && return 0
+    [ -n "${joined[$gid]:-}" ] && return 0
+    name=$(getent group "$gid" | cut -d: -f1 || true)
+    if [ -z "$name" ]; then
+        name="host$gid"
+        groupadd -g "$gid" "$name"
+    fi
+    usermod -aG "$name" pcsx2
+    joined[$gid]=1
+}
+usermod -aG input,video,audio pcsx2
+for dev in /dev/dri/* /dev/input/event* /dev/snd/*; do
+    join_group_of "$dev"
+done
+
+if [ -c /dev/uinput ]; then
+    # Docker creates this node inside the container's own /dev, so changing it is safe.
+    chgrp input /dev/uinput && chmod 0660 /dev/uinput \
+        || warn "Could not set permissions on /dev/uinput"
+else
+    warn "/dev/uinput is missing: Moonlight keyboard, mouse and controllers will not work."
+fi
+if [ ! -d /dev/input ] || ! compgen -G "/dev/input/event*" >/dev/null; then
+    warn "/dev/input from the host is not mounted: PCSX2 will not see Moonlight controllers."
+fi
+
+# ---------------------------------------------------------------- GPU ----
+find_card() {
+    local vendor=$1 c name
+    for c in /sys/class/drm/card*; do
+        name=${c##*/}
+        [[ $name =~ ^card[0-9]+$ ]] || continue
+        [ "$(cat "$c/device/vendor" 2>/dev/null)" = "$vendor" ] || continue
+        [ -e "/dev/dri/$name" ] || continue
+        echo "$name"
+        return 0
+    done
+    return 1
+}
+
+GPU_TYPE=${GPU_TYPE:-auto}
+if [ "$GPU_TYPE" = auto ]; then
+    if compgen -G "/dev/nvidia[0-9]*" >/dev/null; then
+        GPU_TYPE=nvidia
+    elif find_card 0x1002 >/dev/null; then
+        GPU_TYPE=amd
+    elif find_card 0x8086 >/dev/null; then
+        GPU_TYPE=intel
+    else
+        GPU_TYPE=dummy
+    fi
+fi
+case $GPU_TYPE in
+    amd) vendor=0x1002 ;;
+    intel) vendor=0x8086 ;;
+    nvidia) vendor=0x10de ;;
+    dummy) vendor="" ;;
+    *) die "GPU_TYPE must be auto, amd, intel, nvidia or dummy (got '$GPU_TYPE')" ;;
+esac
+
+card=${DRI_CARD:-}
+card=${card##*/}
+if [ -z "$card" ] && [ -n "$vendor" ]; then
+    card=$(find_card "$vendor" || true)
+fi
+render=""
+if [ -n "$card" ]; then
+    render=$(ls "/sys/class/drm/$card/device/drm" 2>/dev/null | grep -m1 '^renderD' || true)
+fi
+if [ "$GPU_TYPE" = amd ] || [ "$GPU_TYPE" = intel ]; then
+    [ -n "$card" ] || die "GPU_TYPE=$GPU_TYPE but no matching /dev/dri card. Is the GPU assigned to the app?"
+fi
+if [ "$GPU_TYPE" = dummy ]; then
+    warn "No GPU found: using software rendering and encoding. Expect poor performance."
+fi
+
+cat > "$RUNTIME_ENV" <<EOF
+GPU_TYPE=$GPU_TYPE
+DRI_CARD=$card
+DRI_RENDER=${render:+/dev/dri/$render}
+EOF
+log "GPU: $GPU_TYPE${card:+ ($card${render:+, $render})}"
+
+if [ "$GPU_TYPE" = nvidia ]; then
+    /usr/local/bin/setup-nvidia
+fi
+/usr/local/bin/gen-xorg-conf
+
+# ------------------------------------------------------------- configs ----
+for d in /config/.config /config/.cache /config/.local/share; do
+    [ -d "$d" ] || { mkdir -p "$d"; chown "$PUID:$PGID" "$d" 2>/dev/null || true; }
+done
+chown "$PUID:$PGID" /config/.local 2>/dev/null || true
+as_user /usr/local/bin/seed-config
+
+if [ -n "${SUNSHINE_PASS:-}" ]; then
+    if as_user sunshine /config/.config/sunshine/sunshine.conf --creds "${SUNSHINE_USER:-admin}" "$SUNSHINE_PASS" >/dev/null 2>&1; then
+        log "Sunshine web UI login set for user '${SUNSHINE_USER:-admin}'"
+    else
+        warn "Could not set the Sunshine login. Avoid quotes, \$ and \\ in the password."
+    fi
+else
+    warn "SUNSHINE_PASS is empty: Sunshine will ask you to create a login at https://<server-ip>:47990"
+fi
+unset SUNSHINE_PASS
+
+log "Starting services"
+exec /usr/bin/supervisord -c /etc/supervisor/pcsx2-headless.conf

@@ -1,0 +1,31 @@
+# Local test data: never commit BIOS dumps, games or runtime config
+/config/
+/bios/
+/games/
+*.iso
+*.chd
+*.cso
+*.bin
+*.nvm
+*.mec
+*.ps2
+
+# Downloaded artifacts
+*.AppImage
+*.deb
+*.run
+*.part
+
+# Secrets and local overrides
+.env
+.env.*
+*.local.yaml
+secrets/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db

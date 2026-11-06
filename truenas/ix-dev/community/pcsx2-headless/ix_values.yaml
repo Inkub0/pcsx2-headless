@@ -1,0 +1,7 @@
+images:
+  image:
+    repository: ghcr.io/inkub0/pcsx2-headless
+    tag: "1.0.0"
+
+consts:
+  pcsx2_container_name: pcsx2-headless

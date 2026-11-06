@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Runs PCSX2 in Big Picture mode. If it is closed or crashes, supervisord starts it again.
+set -euo pipefail
+. /usr/local/lib/pcsx2-headless/common.sh
+
+wait_for_x 60 || die "X server did not start; see /tmp/Xorg.0.log"
+wait_for_file "$PULSE_SOCKET" 30 || true
+
+if [ ! -d /bios ] || [ -z "$(ls -A /bios 2>/dev/null)" ]; then
+    warn "No BIOS found in /bios. Mount the folder with your PS2 BIOS dump there."
+fi
+if [ ! -d /games ] || [ -z "$(ls -A /games 2>/dev/null)" ]; then
+    warn "No games found in /games. Mount the folder with your ISO/CHD files there."
+fi
+
+export QT_QPA_PLATFORM=xcb
+# Read controllers straight from /dev/input instead of relying on udev inside the container.
+export SDL_JOYSTICK_DISABLE_UDEV=${SDL_JOYSTICK_DISABLE_UDEV:-1}
+
+# shellcheck disable=SC2086
+exec_as_user /opt/pcsx2/AppRun -bigpicture -fullscreen ${PCSX2_ARGS:-}

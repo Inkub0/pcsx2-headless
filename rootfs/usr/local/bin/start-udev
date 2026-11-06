@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# udev lets Xorg pick up the keyboard and mouse Sunshine creates for each Moonlight session.
+# Controllers don't depend on it: PCSX2 (SDL) watches /dev/input directly.
+. /usr/local/lib/pcsx2-headless/common.sh
+
+if ! is_true "${ENABLE_UDEV:-true}"; then
+    log "udev disabled (ENABLE_UDEV=false): Moonlight keyboard and mouse won't reach the desktop"
+    exit 0
+fi
+mkdir -p /run/udev
+exec /usr/lib/systemd/systemd-udevd --resolve-names=never

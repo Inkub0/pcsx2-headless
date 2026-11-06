@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. /usr/local/lib/pcsx2-headless/common.sh
+
+wait_for_x 60 || die "X server did not start; see /tmp/Xorg.0.log"
+as_user xset s off -dpms s noblank >/dev/null 2>&1 || true
+exec_as_user openbox --sm-disable

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+. /usr/local/lib/pcsx2-headless/common.sh
+load_runtime_env
+
+rm -f /tmp/.X0-lock /tmp/.X11-unix/X0
+mkdir -p /tmp/.X11-unix
+chmod 1777 /tmp/.X11-unix
+
+if is_true "${ENABLE_UDEV:-true}"; then
+    for _ in $(seq 1 10); do
+        pgrep -x systemd-udevd >/dev/null && break
+        sleep 0.5
+    done
+    if pgrep -x systemd-udevd >/dev/null; then
+        udevadm trigger --subsystem-match=input --action=add >/dev/null 2>&1 || true
+        udevadm settle --timeout=5 >/dev/null 2>&1 || true
+    fi
+fi
+
+log "Starting Xorg (${GPU_TYPE:-?}, ${RESOLUTION:-1920x1080}@${REFRESH_RATE:-60}); full log in /tmp/Xorg.0.log"
+# -nolisten local: no abstract socket, so with host networking nothing outside
+# the container can reach this X server.
+exec Xorg :0 \
+    -config /etc/X11/xorg.conf \
+    -logfile /tmp/Xorg.0.log \
+    -noreset -novtswitch -sharevts \
+    -nolisten tcp -nolisten local \
+    -ac -dpi 96 -s 0 \
+    +extension GLX +extension RANDR +extension RENDER

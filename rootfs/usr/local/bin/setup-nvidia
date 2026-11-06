@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Makes the host's NVIDIA driver usable by Xorg inside the container.
+#
+# The NVIDIA container toolkit (TrueNAS GPU assignment) injects the userspace libraries,
+# but not the Xorg driver. This fetches the matching driver package once (cached in /config),
+# copies the Xorg pieces in, and installs the userspace libraries only if they are missing.
+set -euo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+
+ver=$(nvidia_driver_version)
+[ -n "$ver" ] || die "NVIDIA GPU selected but the driver version is unknown. Is the NVIDIA driver installed on the host and the GPU assigned to this app?"
+log "NVIDIA driver $ver"
+
+marker=/usr/lib/xorg/modules/drivers/.nvidia-$ver
+if [ -e "$marker" ]; then
+    log "NVIDIA Xorg driver already set up"
+    exit 0
+fi
+
+cache=/config/.cache/pcsx2-headless/nvidia
+mkdir -p "$cache"
+run=$cache/NVIDIA-Linux-x86_64-$ver.run
+if [ ! -s "$run" ]; then
+    log "Downloading NVIDIA $ver driver package (one time, roughly 300-400 MB)"
+    curl -fL --retry 3 -o "$run.part" \
+        "https://download.nvidia.com/XFree86/Linux-x86_64/$ver/NVIDIA-Linux-x86_64-$ver.run" \
+        || die "Could not download the NVIDIA $ver driver package. The container needs internet access on first start."
+    mv "$run.part" "$run"
+fi
+# Keep only the current version in the cache
+find "$cache" -maxdepth 1 -name 'NVIDIA-Linux-*.run' ! -name "NVIDIA-Linux-x86_64-$ver.run" -delete
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+sh "$run" --extract-only --target "$tmp/nv" >/dev/null
+src=$tmp/nv
+
+install -Dm755 "$src/nvidia_drv.so" /usr/lib/xorg/modules/drivers/nvidia_drv.so
+install -Dm755 "$src/libglxserver_nvidia.so.$ver" /usr/lib/xorg/modules/extensions/libglxserver_nvidia.so
+
+if ! ldconfig -p | grep -q 'libGLX_nvidia.so.0'; then
+    log "NVIDIA OpenGL libraries were not provided by the container runtime; installing them from the driver package"
+    sh "$run" --silent --no-kernel-module --no-nouveau-check --no-nvidia-modprobe --no-backup \
+        --no-check-for-alternate-installs --no-x-check --no-distro-scripts \
+        --no-libglx-indirect --no-install-libglvnd --no-install-compat32-libs \
+        || die "NVIDIA userspace install failed. Set NVIDIA_DRIVER_CAPABILITIES=all for the container."
+fi
+
+# Vulkan and EGL loaders need to know about the NVIDIA libraries
+if [ ! -e /usr/share/vulkan/icd.d/nvidia_icd.json ] && [ ! -e /etc/vulkan/icd.d/nvidia_icd.json ]; then
+    install -d /usr/share/vulkan/icd.d
+    cat > /usr/share/vulkan/icd.d/nvidia_icd.json <<'EOF'
+{ "file_format_version": "1.0.1", "ICD": { "library_path": "libGLX_nvidia.so.0", "api_version": "1.3.0" } }
+EOF
+fi
+if [ ! -e /usr/share/glvnd/egl_vendor.d/10_nvidia.json ]; then
+    install -d /usr/share/glvnd/egl_vendor.d
+    cat > /usr/share/glvnd/egl_vendor.d/10_nvidia.json <<'EOF'
+{ "file_format_version": "1.0.0", "ICD": { "library_path": "libEGL_nvidia.so.0" } }
+EOF
+fi
+
+ldconfig
+touch "$marker"
+log "NVIDIA Xorg driver ready"

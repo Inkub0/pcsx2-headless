@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Writes first-run settings for PCSX2 and Sunshine, running as the pcsx2 user.
+# Settings you change later in PCSX2 or the Sunshine web UI are kept, except for the
+# few keys below that must always match the container (paths, capture, encoder).
+set -euo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+load_runtime_env
+
+defaults=/usr/local/share/pcsx2-headless
+
+# -------------------------------------------------------------- PCSX2 ----
+ini=$XDG_CONFIG_HOME/PCSX2/inis/PCSX2.ini
+mkdir -p "${ini%/*}"
+if [ ! -s "$ini" ]; then
+    log "First run: writing default PCSX2 settings"
+    cp "$defaults/PCSX2.ini" "$ini"
+fi
+set_ini() { crudini --set "$ini" "$1" "$2" "$3"; }
+set_ini Folders Bios /bios
+set_ini UI SetupWizardIncomplete false
+set_ini AutoUpdater CheckAtStartup false
+[ -n "${PCSX2_RENDERER:-}" ] && set_ini EmuCore/GS Renderer "$PCSX2_RENDERER"
+[ -n "${PCSX2_UPSCALE:-}" ] && set_ini EmuCore/GS upscale_multiplier "$PCSX2_UPSCALE"
+
+# ----------------------------------------------------------- Sunshine ----
+sdir=$XDG_CONFIG_HOME/sunshine
+conf=$sdir/sunshine.conf
+mkdir -p "$sdir"
+if [ ! -s "$conf" ]; then
+    log "First run: writing default Sunshine settings"
+    cp "$defaults/sunshine.conf" "$conf"
+fi
+[ -s "$sdir/apps.json" ] || cp "$defaults/apps.json" "$sdir/apps.json"
+
+set_conf() {
+    local key=$1 value=$2
+    if grep -qE "^[[:space:]]*${key}[[:space:]]*=" "$conf"; then
+        sed -i -E "s|^[[:space:]]*${key}[[:space:]]*=.*|${key} = ${value}|" "$conf"
+    else
+        echo "${key} = ${value}" >> "$conf"
+    fi
+}
+set_conf sunshine_name "${SUNSHINE_NAME:-pcsx2-headless}"
+set_conf file_apps "$sdir/apps.json"
+set_conf capture x11
+
+encoder=${SUNSHINE_ENCODER:-}
+if [ -z "$encoder" ]; then
+    case $GPU_TYPE in
+        amd|intel) encoder=vaapi ;;
+        nvidia) encoder=nvenc ;;
+        *) encoder=software ;;
+    esac
+fi
+set_conf encoder "$encoder"
+if [ "$encoder" = vaapi ] && [ -n "${DRI_RENDER:-}" ]; then
+    set_conf adapter_name "$DRI_RENDER"
+fi

@@ -1,0 +1,24 @@
+{
+  "env": {},
+  "apps": [
+    {
+      "name": "PCSX2",
+      "image-path": "",
+      "cmd": "",
+      "auto-detach": "true",
+      "wait-all": "true",
+      "exit-timeout": "5"
+    },
+    {
+      "name": "Restart PCSX2",
+      "image-path": "",
+      "cmd": "",
+      "prep-cmd": [
+        { "do": "pkill -f /opt/pcsx2/", "undo": "" }
+      ],
+      "auto-detach": "true",
+      "wait-all": "true",
+      "exit-timeout": "5"
+    }
+  ]
+}

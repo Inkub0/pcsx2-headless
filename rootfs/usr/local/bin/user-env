@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Runs a command with the environment the pcsx2 user's programs expect.
+# Used after setpriv has already switched to the unprivileged user.
+exec env -u SUNSHINE_PASS \
+    HOME=/config USER=pcsx2 LOGNAME=pcsx2 \
+    XDG_RUNTIME_DIR=/tmp/runtime-pcsx2 \
+    XDG_CONFIG_HOME=/config/.config \
+    XDG_DATA_HOME=/config/.local/share \
+    XDG_CACHE_HOME=/config/.cache \
+    PULSE_SERVER=unix:/tmp/runtime-pcsx2/pulse/native \
+    DISPLAY=:0 \
+    "$@"

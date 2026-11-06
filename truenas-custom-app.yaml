@@ -1,0 +1,52 @@
+# PCSX2 Headless as a TrueNAS Custom App.
+# TrueNAS: Apps -> Discover Apps -> Custom App -> Install via YAML, then paste this file.
+# Change every line marked  # <-  first.
+services:
+  pcsx2-headless:
+    image: ghcr.io/inkub0/pcsx2-headless:latest   # <- your published image
+    container_name: pcsx2-headless
+    hostname: pcsx2-headless
+    restart: unless-stopped
+    network_mode: host        # Moonlight discovery and streaming (ports 47984-48010)
+    ipc: host
+    shm_size: 2gb
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, KILL, MKNOD, NET_ADMIN, SETGID, SETUID, SYS_ADMIN, SYS_NICE, SYS_TTY_CONFIG]
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    devices:
+      - /dev/dri:/dev/dri          # AMD / Intel GPU (also used alongside NVIDIA)
+      - /dev/uinput:/dev/uinput    # virtual keyboard, mouse and controllers
+    device_cgroup_rules:
+      - "c 13:* rwm"     # input devices Sunshine creates during a session
+      - "c 226:* rwm"    # GPU render nodes
+      - "c 195:* rwm"    # NVIDIA devices (harmless on AMD/Intel)
+    environment:
+      TZ: Europe/London                  # <-
+      PUID: "568"                        # TrueNAS "apps" user
+      PGID: "568"
+      SUNSHINE_USER: admin
+      SUNSHINE_PASS: change-me           # <- Sunshine web UI password (no quotes, $ or \)
+      RESOLUTION: 1920x1080              # 1280x720 | 1920x1080 | 2560x1440 | 3840x2160
+      GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
+      TEARFREE: "true"
+    volumes:
+      - /mnt/tank/apps/pcsx2-headless:/config     # <- settings, memory cards, saves, pairing
+      - /mnt/tank/games/ps2/bios:/bios:ro         # <- folder with your PS2 BIOS dump
+      - /mnt/tank/games/ps2/isos:/games:ro        # <- folder with your ISO/CHD files
+      - /dev/input:/dev/input
+    healthcheck:
+      test: ["CMD", "curl", "-kfsS", "-o", "/dev/null", "https://127.0.0.1:47990/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+    # NVIDIA only: uncomment this block. Install the NVIDIA driver under
+    # Apps -> Configuration -> Settings first.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]

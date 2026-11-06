@@ -1,0 +1,64 @@
+app_version: 1.0.0
+capabilities:
+- description: PCSX2 Headless is able to change file ownership arbitrarily
+  name: CHOWN
+- description: PCSX2 Headless is able to bypass file permission checks
+  name: DAC_OVERRIDE
+- description: PCSX2 Headless is able to bypass permission checks for file operations
+  name: FOWNER
+- description: PCSX2 Headless is able to send signals to any process
+  name: KILL
+- description: PCSX2 Headless is able to create special files using mknod()
+  name: MKNOD
+- description: PCSX2 Headless is able to perform network administration tasks
+  name: NET_ADMIN
+- description: PCSX2 Headless is able to change group ID of processes
+  name: SETGID
+- description: PCSX2 Headless is able to change user ID of processes
+  name: SETUID
+- description: PCSX2 Headless is able to perform system administration operations
+  name: SYS_ADMIN
+- description: PCSX2 Headless is able to modify process scheduling priority
+  name: SYS_NICE
+- description: PCSX2 Headless is able to configure tty devices
+  name: SYS_TTY_CONFIG
+categories:
+- games
+date_added: '2026-11-06'
+description: Stream PS2 games from your NAS with PCSX2 in Big Picture mode and Sunshine
+  (Moonlight). GPU accelerated, no desktop environment.
+home: https://github.com/Inkub0/pcsx2-headless
+host_mounts:
+- description: UInput Device
+  host_path: /dev/uinput
+- description: Input Devices
+  host_path: /dev/input
+icon: https://media.sys.truenas.net/apps/pcsx2-headless/icons/icon.png
+keywords:
+- games
+- emulator
+- pcsx2
+- ps2
+- sunshine
+- moonlight
+lib_version: 2.3.18
+lib_version_hash: ed9839f681342ae8ca5f8c4c860ae22d0845a0919f472ba780d6edbc838f2633
+maintainers:
+- email: YOUR_EMAIL
+  name: YOUR_NAME
+  url: https://github.com/Inkub0
+name: pcsx2-headless
+run_as_context:
+- description: Container [pcsx2-headless] starts as root to set up the display and devices, then runs PCSX2 and Sunshine as the configured user.
+  gid: 0
+  group_name: Host group is [root]
+  uid: 0
+  user_name: Host user is [root]
+screenshots: []
+sources:
+- https://github.com/Inkub0/pcsx2-headless
+- https://github.com/PCSX2/pcsx2
+- https://github.com/LizardByte/Sunshine
+title: PCSX2 Headless
+train: community
+version: 1.0.0
