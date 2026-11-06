@@ -3,7 +3,7 @@
 # Change every line marked  # <-  first.
 services:
   pcsx2-headless:
-    image: ghcr.io/inkub0/pcsx2-headless:sha-8e2d6b8
+    image: ghcr.io/inkub0/pcsx2-headless:sha-f2ecd45   # <- your published image
     container_name: pcsx2-headless
     hostname: pcsx2-headless
     restart: unless-stopped
@@ -27,6 +27,7 @@ services:
       PGID: "568"
       SUNSHINE_USER: admin
       SUNSHINE_PASS: change-me           # <- Sunshine web UI password (no quotes, $ or \)
+      # SUNSHINE_ALLOWED_ORIGINS: https://truenas.local:47990   # only if you open the web UI by hostname; IPs are automatic
       RESOLUTION: 1920x1080              # 1280x720 | 1920x1080 | 2560x1440 | 3840x2160
       GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
       TEARFREE: "true"

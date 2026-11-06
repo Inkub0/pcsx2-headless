@@ -37,6 +37,7 @@ No BIOS or games are included. Dump them from hardware you own.
 | Variable | Default | Meaning |
 |---|---|---|
 | `SUNSHINE_USER` / `SUNSHINE_PASS` | `admin` / empty | Sunshine web UI login. Avoid quotes, `$` and `\`. |
+| `SUNSHINE_ALLOWED_ORIGINS` | empty | Extra web UI addresses Sunshine accepts changes from, e.g. `https://truenas.local:47990`. The server's own IPs are added automatically |
 | `RESOLUTION` | `1920x1080` | `1280x720`, `1920x1080`, `2560x1440` or `3840x2160` |
 | `REFRESH_RATE` | `60` | Other rates need `cvt`, which isn't installed by default |
 | `GPU_TYPE` | `auto` | `auto`, `amd`, `intel`, `nvidia`, `dummy` (software only) |

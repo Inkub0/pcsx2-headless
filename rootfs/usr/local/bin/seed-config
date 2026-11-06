@@ -57,3 +57,20 @@ set_conf encoder "$encoder"
 if [ "$encoder" = vaapi ] && [ -n "${DRI_RENDER:-}" ]; then
     set_conf adapter_name "$DRI_RENDER"
 fi
+
+# Sunshine's CSRF protection only accepts web UI changes (e.g. the pairing PIN) from localhost.
+# Allow this server's own IPv4 addresses on the web UI port, plus SUNSHINE_ALLOWED_ORIGINS
+# (comma-separated, e.g. https://truenas.local:47990). With host networking these are the
+# host's addresses.
+origins=""
+for ip in $(awk '/32 host LOCAL/ {print prev} {prev=$2}' /proc/net/fib_trie 2>/dev/null | sort -u); do
+    case $ip in 127.*) continue ;; esac
+    origins="${origins:+$origins,}https://$ip:47990"
+done
+if [ -n "${SUNSHINE_ALLOWED_ORIGINS:-}" ]; then
+    origins="${origins:+$origins,}${SUNSHINE_ALLOWED_ORIGINS// /}"
+fi
+if [ -n "$origins" ]; then
+    set_conf csrf_allowed_origins "$origins"
+    log "Sunshine web UI accepts changes from: $origins"
+fi
