@@ -3,7 +3,7 @@
   "apps": [
     {
       "name": "PCSX2",
-      "image-path": "",
+      "image-path": "/usr/local/share/pcsx2-headless/icon.png",
       "cmd": "",
       "auto-detach": "true",
       "wait-all": "true",
@@ -11,7 +11,7 @@
     },
     {
       "name": "Restart PCSX2",
-      "image-path": "",
+      "image-path": "/usr/local/share/pcsx2-headless/icon.png",
       "cmd": "",
       "prep-cmd": [
         { "do": "pkill -f /opt/pcsx2/", "undo": "" }

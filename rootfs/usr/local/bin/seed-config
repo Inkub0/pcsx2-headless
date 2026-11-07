@@ -32,6 +32,9 @@ if [ ! -s "$conf" ]; then
     cp "$defaults/sunshine.conf" "$conf"
 fi
 [ -s "$sdir/apps.json" ] || cp "$defaults/apps.json" "$sdir/apps.json"
+# Give apps without a picture the project icon (Moonlight shows it as the tile).
+# Pictures the user has set are left alone.
+sed -i 's|"image-path": ""|"image-path": "/usr/local/share/pcsx2-headless/icon.png"|' "$sdir/apps.json"
 
 set_conf() {
     local key=$1 value=$2
