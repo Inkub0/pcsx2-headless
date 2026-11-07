@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Switches the virtual screen between 60 Hz and 50 Hz (for PAL games).
+# Sunshine runs this when a stream starts and ends (see apps.json). It always exits 0,
+# so a problem here can never stop a stream from starting.
+set -uo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+load_runtime_env
+
+want=${1:-60}
+case $want in
+    60) mode=${XORG_MODE:-} ;;
+    50) mode=${XORG_MODE_50:-} ;;
+    *) warn "set-refresh: use 50 or 60 (got '$want')"; exit 0 ;;
+esac
+if [ -z "$mode" ]; then
+    warn "No ${want} Hz screen mode available; keeping the current refresh rate"
+    exit 0
+fi
+
+# The active output is the one with a position, e.g. "HDMI-A-0 connected 1920x1080+0+0 ..."
+out=$(xrandr --query 2>/dev/null \
+    | awk '($2 == "connected" || $2 == "disconnected") && /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/ {print $1; exit}')
+if [ -z "$out" ]; then
+    warn "set-refresh: no active display found"
+    exit 0
+fi
+
+if xrandr --output "$out" --mode "$mode" 2>/dev/null; then
+    log "Screen set to ${want} Hz ($mode on $out)"
+else
+    warn "Could not switch $out to $mode; keeping the current refresh rate"
+fi
+
+fps=${SUNSHINE_CLIENT_FPS:-}
+if [ -n "$fps" ] && [ "$fps" != "$want" ]; then
+    log "Moonlight is streaming at ${fps} fps. Set Moonlight's frame rate to ${want} for the smoothest picture."
+fi
+exit 0

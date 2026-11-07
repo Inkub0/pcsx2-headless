@@ -33,6 +33,25 @@ case "${w}x${h}@${rate}" in
 esac
 MODE=$(awk '{print $1}' <<<"$ML" | tr -d '"')
 
+# A 50 Hz mode next to the main one, for PAL games (set-refresh switches to it).
+ML50=""
+if [ "$rate" != 50 ]; then
+    case "${w}x${h}" in
+        1280x720)  ML50='"1280x720_50R" 53.00 1280 1328 1360 1440 720 723 728 737 +hsync -vsync' ;;
+        1920x1080) ML50='"1920x1080_50R" 115.00 1920 1968 2000 2080 1080 1083 1088 1106 +hsync -vsync' ;;
+        2560x1440) ML50='"2560x1440_50R" 200.25 2560 2608 2640 2720 1440 1443 1448 1474 +hsync -vsync' ;;
+        3840x2160) ML50='"3840x2160_50R" 442.00 3840 3888 3920 4000 2160 2163 2168 2211 +hsync -vsync' ;;
+        *) command -v cvt >/dev/null 2>&1 && ML50=$(cvt "$w" "$h" 50 | sed -n 's/^Modeline //p') ;;
+    esac
+fi
+MODE50=""; [ -n "$ML50" ] && MODE50=$(awk '{print $1}' <<<"$ML50" | tr -d '"')
+MODELINES="    Modeline ${ML}"
+MODES="\"${MODE}\""
+if [ -n "$MODE50" ]; then
+    MODELINES+=$'\n'"    Modeline ${ML50}"
+    MODES+=" \"${MODE50}\""
+fi
+
 # Kernel connector name (e.g. DP-1, HDMI-A-1) -> name used by the Xorg driver.
 xorg_output_name() {
     local driver=$1 kname=$2 type idx
@@ -131,7 +150,7 @@ EndSection
 
 Section "Monitor"
     Identifier "monitor0"
-    Modeline ${ML}
+${MODELINES}
     Option "PreferredMode" "${MODE}"
     Option "Enable" "true"
 EndSection
@@ -143,7 +162,7 @@ Section "Screen"
     DefaultDepth 24
     SubSection "Display"
         Depth 24
-        Modes "${MODE}"
+        Modes ${MODES}
         Virtual ${w} ${h}
     EndSubSection
 EndSection
@@ -157,6 +176,9 @@ EOF
         fi
         [ -n "$busid" ] || busid=$(busid_for_card "${DRI_CARD:-}") || die "Could not find the NVIDIA GPU's PCI address"
         ffcp=Off; [ "$tearfree" = true ] && ffcp=On
+        mon=${NVIDIA_CONNECTED_MONITOR:-DFP-0}
+        metamodes="${mon}: ${MODE} +0+0 { ForceFullCompositionPipeline = ${ffcp} }"
+        [ -n "$MODE50" ] && metamodes+="; ${mon}: ${MODE50} +0+0 { ForceFullCompositionPipeline = ${ffcp} }"
         cat <<EOF
 Section "Device"
     Identifier "gpu0"
@@ -172,7 +194,7 @@ Section "Monitor"
     Identifier "monitor0"
     HorizSync 5.0 - 1000.0
     VertRefresh 5.0 - 1000.0
-    Modeline ${ML}
+${MODELINES}
 EndSection
 
 Section "Screen"
@@ -180,10 +202,10 @@ Section "Screen"
     Device "gpu0"
     Monitor "monitor0"
     DefaultDepth 24
-    Option "MetaModes" "${NVIDIA_CONNECTED_MONITOR:-DFP-0}: ${MODE} +0+0 { ForceFullCompositionPipeline = ${ffcp} }"
+    Option "MetaModes" "${metamodes}"
     SubSection "Display"
         Depth 24
-        Modes "${MODE}"
+        Modes ${MODES}
         Virtual ${w} ${h}
     EndSubSection
 EndSection
@@ -201,7 +223,7 @@ Section "Monitor"
     Identifier "monitor0"
     HorizSync 5.0 - 1000.0
     VertRefresh 5.0 - 200.0
-    Modeline ${ML}
+${MODELINES}
 EndSection
 
 Section "Screen"
@@ -211,7 +233,7 @@ Section "Screen"
     DefaultDepth 24
     SubSection "Display"
         Depth 24
-        Modes "${MODE}"
+        Modes ${MODES}
         Virtual ${w} ${h}
     EndSubSection
 EndSection
@@ -220,4 +242,6 @@ EOF
 esac
 } > "$out"
 
-log "Wrote $out (${GPU_TYPE}, ${MODE})"
+# Mode names for set-refresh (switching between 60 and 50 Hz).
+printf 'XORG_MODE=%q\nXORG_MODE_50=%q\n' "$MODE" "$MODE50" >> "$RUNTIME_ENV"
+log "Wrote $out (${GPU_TYPE}, ${MODE}${MODE50:+, PAL mode ${MODE50}})"
