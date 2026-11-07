@@ -31,7 +31,6 @@ services:
       RESOLUTION: 1920x1080              # 1280x720 | 1920x1080 | 2560x1440 | 3840x2160
       GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
       TEARFREE: "false"
-      SUNSHINE_CAPTURE: kms              # kms avoids tearing in the stream; x11 is the fallback
       PCSX2_COVERS: "true"               # download missing covers on start (PCSX2_COVERS_STYLE: 3d for box art)
     volumes:
       - /mnt/MiuzzoData/SOFTWARE/EMU-ROMS/PS2/PCSX2-CFG:/config     # <- settings, memory cards, saves, pairing

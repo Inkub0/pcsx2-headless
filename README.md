@@ -137,7 +137,7 @@ everything, including pairing.
 | `PCSX2_COVERS_STYLE` | `default` | `default` (flat) or `3d` box art |
 | `PCSX2_COVERS_URL` | empty | Your own cover source; must contain `${serial}` |
 | `SUNSHINE_ENCODER` | auto | Override Sunshine's encoder (`vaapi`, `nvenc`, `software`) |
-| `SUNSHINE_CAPTURE` | `x11` | Screen capture method. `kms` reads finished frames from the GPU and avoids tearing in the stream; `x11` is the fallback |
+| `SUNSHINE_CAPTURE` | `kms` | Screen capture method. `kms` reads finished frames from the GPU and avoids tearing in the stream; `x11` is the fallback if kms capture fails |
 | `ENABLE_UDEV` | `true` | Needed for Moonlight keyboard/mouse. Controllers work without it |
 | `INPUT_GID` | auto | Host gid of `/dev/input` nodes, if auto-detection guesses wrong |
 
@@ -161,7 +161,8 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
 | The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin the new `sha-...` tag (see [Updating](#updating)). |
 | Tearing in PAL games only | Start **PCSX2 (PAL 50 Hz)** in Moonlight and set Moonlight's frame rate to 50. See [PAL games](#pal-games-50-hz). |
-| Tearing in the stream, also with V-Sync on in Moonlight | Set `SUNSHINE_CAPTURE: kms`. X11 capture can grab half-drawn frames. |
+| Tearing in the stream, also with V-Sync on in Moonlight | Make sure `SUNSHINE_CAPTURE` is not set to `x11`. X11 capture can grab half-drawn frames. |
+| Black stream or Sunshine log says kms capture failed | Set `SUNSHINE_CAPTURE: x11`. |
 | Black stream on AMD / Intel | The forced output isn't accepted by your card. An HDMI or DisplayPort dummy plug fixes it. |
 | No covers | Set `PCSX2_COVERS: "true"`. Covers appear after PCSX2 restarts (restart the app in TrueNAS). |
 | The config folder looks empty over SMB | Older versions kept data in the hidden `.config` folder. Current versions move it to `PCSX2/` and `sunshine/` on start. |

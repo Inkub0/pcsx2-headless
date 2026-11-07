@@ -66,12 +66,12 @@ set_conf() {
 }
 set_conf sunshine_name "${SUNSHINE_NAME:-pcsx2-headless}"
 set_conf file_apps "$sdir/apps.json"
-# x11 copies the screen without waiting for the display refresh and can show tearing;
-# kms reads the finished frame from the GPU (needs CAP_SYS_ADMIN, which the sunshine binary has).
-capture=${SUNSHINE_CAPTURE:-x11}
+# kms (default) reads the finished frame from the GPU (needs CAP_SYS_ADMIN, which the sunshine
+# binary has); x11 copies the screen without waiting for the display refresh and can show tearing.
+capture=${SUNSHINE_CAPTURE:-kms}
 case $capture in
     x11|kms) ;;
-    *) warn "SUNSHINE_CAPTURE must be x11 or kms (got '$capture'); using x11"; capture=x11 ;;
+    *) warn "SUNSHINE_CAPTURE must be x11 or kms (got '$capture'); using kms"; capture=kms ;;
 esac
 set_conf capture "$capture"
 
