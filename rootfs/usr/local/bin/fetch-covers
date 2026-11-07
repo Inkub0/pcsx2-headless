@@ -69,4 +69,4 @@ for serial in "${serials[@]}"; do
 done
 log "Covers: ${#serials[@]} games, $got downloaded, $have already had one, ${#missing[@]} not available"
 [ "${#missing[@]}" -eq 0 ] || log "No cover available for: ${missing[*]}"
-[ "$got" -eq 0 ] || log "New covers show up after PCSX2 restarts (Moonlight: 'Restart PCSX2')"
+[ "$got" -eq 0 ] || log "New covers show up after PCSX2 restarts (restart the app in TrueNAS)"

@@ -5,16 +5,19 @@
       "name": "PCSX2",
       "image-path": "/usr/local/share/pcsx2-headless/icon.png",
       "cmd": "",
+      "prep-cmd": [
+        { "do": "/usr/local/bin/set-refresh 60", "undo": "" }
+      ],
       "auto-detach": "true",
       "wait-all": "true",
       "exit-timeout": "5"
     },
     {
-      "name": "Restart PCSX2",
+      "name": "PCSX2 (PAL 50 Hz)",
       "image-path": "/usr/local/share/pcsx2-headless/icon.png",
       "cmd": "",
       "prep-cmd": [
-        { "do": "pkill -f /opt/pcsx2/", "undo": "" }
+        { "do": "/usr/local/bin/set-refresh 50", "undo": "/usr/local/bin/set-refresh 60" }
       ],
       "auto-detach": "true",
       "wait-all": "true",

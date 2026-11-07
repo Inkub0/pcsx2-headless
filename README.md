@@ -17,7 +17,8 @@ a one-time NVIDIA driver fetch on NVIDIA systems and optional covers).
 - PCSX2 (official AppImage, latest stable at build time) in Big Picture mode, already set up:
   BIOS from `/bios`, games from `/games`, Vulkan renderer, 3x resolution, first controller mapped,
   Guide button opens the pause menu.
-- Sunshine (latest LizardByte release) with two apps: **PCSX2** and **Restart PCSX2**.
+- Sunshine (latest LizardByte release) with two apps: **PCSX2** (60 Hz) and **PCSX2 (PAL 50 Hz)**
+  for PAL games, which switches the screen to 50 Hz so they don't tear.
 - Hardware encoding: VAAPI on AMD and Intel, NVENC on NVIDIA (software only as a last resort).
 - Optional cover download for your games (`PCSX2_COVERS`).
 - Settings, memory cards, save states and pairing kept in your config folder (see [Your files](#your-files)).
@@ -58,8 +59,8 @@ You also need:
    go to the **PIN** tab and enter the PIN Moonlight shows.
 6. **Play:** in Moonlight, start **PCSX2**. You get PCSX2's Big Picture game list.
    - **Quit a game:** press the controller's **Guide** button (Xbox / PS / Home) for the pause menu,
-     then **Close Game**. If your Moonlight client keeps the Guide button for itself, start
-     **Restart PCSX2** from Moonlight instead.
+     then **Close Game**. If your Moonlight client keeps the Guide button for itself, restart the
+     app in TrueNAS (Apps > pcsx2-headless > Restart) to get back to the game list.
    - **Leave the stream:** Start + Select + L1 + R1 disconnects Moonlight; the game keeps running.
 
 **Optional, the icon in the TrueNAS Apps list.** Custom apps show a blank icon, and TrueNAS has
@@ -76,6 +77,20 @@ Then refresh the TrueNAS page. This is unofficial: TrueNAS may reset it when you
 Building your own image instead: fork this repo; the included GitHub workflow publishes
 `ghcr.io/<you>/pcsx2-headless`. Make the package public (GitHub profile > Packages > package
 settings) so TrueNAS can pull it without logging in.
+
+## PAL games (50 Hz)
+
+PAL games run at 50 frames per second. On a 60 Hz screen they tear, because frames can't line
+up with the refresh. For PAL games:
+
+1. In Moonlight, set the frame rate to **50** (Settings > Frame rate; Moonlight 5.0 and later
+   accept custom values).
+2. Start **PCSX2 (PAL 50 Hz)** instead of **PCSX2**. It switches the screen to 50 Hz for the
+   session and back to 60 Hz when the stream ends.
+
+For NTSC games, use **PCSX2** with Moonlight at 60 fps. If the two don't match, the app log
+says so (`Moonlight is streaming at 60 fps. Set Moonlight's frame rate to 50 ...`). A mismatch
+gives slightly uneven motion, but no tearing.
 
 ## Updating
 
@@ -141,9 +156,10 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `No BIOS found` / `No games found`, or the game list is empty | The volume path doesn't exist exactly as written (case matters) and Docker created an empty folder, or the `apps` user can't read it. |
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
 | The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin the new `sha-...` tag (see [Updating](#updating)). |
+| Tearing in PAL games only | Start **PCSX2 (PAL 50 Hz)** in Moonlight and set Moonlight's frame rate to 50. See [PAL games](#pal-games-50-hz). |
 | Tearing in the stream, also with V-Sync on in Moonlight | Set `SUNSHINE_CAPTURE: kms`. X11 capture can grab half-drawn frames. |
 | Black stream on AMD / Intel | The forced output isn't accepted by your card. An HDMI or DisplayPort dummy plug fixes it. |
-| No covers | Set `PCSX2_COVERS: "true"`. Covers appear after PCSX2 restarts (Moonlight: **Restart PCSX2**). |
+| No covers | Set `PCSX2_COVERS: "true"`. Covers appear after PCSX2 restarts (restart the app in TrueNAS). |
 | The config folder looks empty over SMB | Older versions kept data in the hidden `.config` folder. Current versions move it to `PCSX2/` and `sunshine/` on start. |
 
 **Safe to ignore** in the log: PulseAudio `Failed to connect to system bus`, udev `The line has no

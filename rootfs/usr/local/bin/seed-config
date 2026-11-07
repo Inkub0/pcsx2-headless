@@ -31,10 +31,24 @@ if [ ! -s "$conf" ]; then
     log "First run: writing default Sunshine settings"
     cp "$defaults/sunshine.conf" "$conf"
 fi
-[ -s "$sdir/apps.json" ] || cp "$defaults/apps.json" "$sdir/apps.json"
-# Give apps without a picture the project icon (Moonlight shows it as the tile).
-# Pictures the user has set are left alone.
-sed -i 's|"image-path": ""|"image-path": "/usr/local/share/pcsx2-headless/icon.png"|' "$sdir/apps.json"
+apps=$sdir/apps.json
+[ -s "$apps" ] || cp "$defaults/apps.json" "$apps"
+# The PCSX2 entries are managed by the image: refresh them from the defaults on every start,
+# keeping a picture the user has set, and drop the old "Restart PCSX2" entry.
+# Entries the user added are kept as they are.
+if updated=$(jq --slurpfile d "$defaults/apps.json" '
+        ($d[0].apps | map(.name)) as $managed
+        | (.apps // []) as $cur
+        | .apps = ($d[0].apps
+                   | map(. as $a
+                         | (first($cur[] | select(.name == $a.name) | ."image-path") // "") as $img
+                         | if $img != "" then ."image-path" = $img else . end))
+                  + [$cur[] | select(.name as $n | ($managed + ["Restart PCSX2"]) | index($n) | not)]
+    ' "$apps" 2>/dev/null); then
+    printf '%s\n' "$updated" > "$apps"
+else
+    warn "Could not update $apps (is it valid JSON?); leaving it unchanged"
+fi
 
 set_conf() {
     local key=$1 value=$2
