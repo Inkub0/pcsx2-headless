@@ -3,7 +3,7 @@
 Stream PS2 games from a headless server (TrueNAS SCALE or any Docker host) to any
 [Moonlight](https://moonlight-stream.org) client.
 
-One container, one job: **Xorg → Openbox → PCSX2 (Big Picture, fullscreen) → Sunshine**.
+One container, one job: **Xorg -> Openbox -> PCSX2 (Big Picture, fullscreen) -> Sunshine**.
 No desktop environment, no Steam, no Flatpak sandbox, no first-boot downloads (apart from
 a one-time NVIDIA driver fetch on NVIDIA systems and optional covers).
 
@@ -13,7 +13,7 @@ a one-time NVIDIA driver fetch on NVIDIA systems and optional covers).
 ## What you get
 
 - PCSX2 (official AppImage, latest stable at build time) in Big Picture mode, already set up:
-  BIOS from `/bios`, games from `/games`, Vulkan renderer, 3× resolution, first controller mapped,
+  BIOS from `/bios`, games from `/games`, Vulkan renderer, 3x resolution, first controller mapped,
   Guide button opens the pause menu.
 - Sunshine (latest LizardByte release) with two apps: **PCSX2** and **Restart PCSX2**.
 - Hardware encoding: VAAPI on AMD and Intel, NVENC on NVIDIA (software only as a last resort).
@@ -46,8 +46,8 @@ You also need:
    `SUNSHINE_PASS` and `TZ`. Pin the image to the newest `sha-...` tag from the
    [package page](https://github.com/users/Inkub0/packages/container/package/pcsx2-headless),
    e.g. `ghcr.io/inkub0/pcsx2-headless:sha-1a2b3c4` (see [Updating](#updating)). On NVIDIA, uncomment the `deploy:` block.
-3. **Install:** Apps → Discover Apps → Custom App → **Install via YAML**, paste the file and save.
-4. **Check the log** (Apps → Installed → pcsx2-headless → Logs). Within a minute you should see:
+3. **Install:** Apps > Discover Apps > Custom App > **Install via YAML**, paste the file and save.
+4. **Check the log** (Apps > Installed > pcsx2-headless > Logs). Within a minute you should see:
    - `GPU: amd (card0, renderD128)` (or `intel` / `nvidia`)
    - `Sunshine web UI accepts changes from: https://<server-ip>:47990`
    - `Found H.264 encoder: h264_vaapi` (or `h264_nvenc`)
@@ -61,14 +61,14 @@ You also need:
    - **Leave the stream:** Start + Select + L1 + R1 disconnects Moonlight; the game keeps running.
 
 Building your own image instead: fork this repo; the included GitHub workflow publishes
-`ghcr.io/<you>/pcsx2-headless`. Make the package public (GitHub profile → Packages → package
+`ghcr.io/<you>/pcsx2-headless`. Make the package public (GitHub profile > Packages > package
 settings) so TrueNAS can pull it without logging in.
 
 ## Updating
 
 Every push to `main` builds a new image tagged `latest` and `sha-<commit>`. TrueNAS keeps using
 its cached copy of `latest`, so **pin the `sha-...` tag** in the YAML and change it to update
-(Apps → pcsx2-headless → Edit). Changing the tag makes TrueNAS pull the new image.
+(Apps > pcsx2-headless > Edit). Changing the tag makes TrueNAS pull the new image.
 
 ## Your files
 
