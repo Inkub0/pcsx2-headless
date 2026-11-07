@@ -130,6 +130,18 @@ case $GPU_TYPE in
             [ -n "${kname:-}" ] || die "$DRI_CARD has no display outputs. Set GPU_TYPE=dummy, or use a GPU with outputs."
             output=$(xorg_output_name "$driver" "$kname")
         fi
+        # Every other output of the card is switched off. Otherwise Xorg also applies monitor0
+        # (with "Enable") to the card's first output, which then shows up as a second, phantom
+        # display: PCSX2 syncs to one display while Sunshine captures the other.
+        others=()
+        for con in /sys/class/drm/"$DRI_CARD"-*; do
+            [ -r "$con/status" ] || continue
+            kn=${con##*/"$DRI_CARD"-}
+            case $kn in Writeback-*) continue ;; esac
+            on=$(xorg_output_name "$driver" "$kn")
+            [ -n "$on" ] && [ "$on" != "$output" ] && others+=("$on")
+        done
+        XORG_OUTPUT_NAME=$output
         if [ "$how" = forced ]; then
             warn "Nothing is plugged into the GPU: forcing output $output on at $MODE."
             warn "If the stream stays black, plug an HDMI/DisplayPort dummy adapter into the GPU."
@@ -146,6 +158,15 @@ EOF
         [ "$GPU_TYPE" = intel ] && echo '    Option "AccelMethod" "glamor"'
         cat <<EOF
     Option "Monitor-${output}" "monitor0"
+EOF
+        for o in "${others[@]}"; do echo "    Option \"Monitor-${o}\" \"monitor-off\""; done
+        cat <<EOF
+EndSection
+
+Section "Monitor"
+    Identifier "monitor-off"
+    Option "Ignore" "true"
+    Option "Enable" "false"
 EndSection
 
 Section "Monitor"
@@ -243,5 +264,5 @@ esac
 } > "$out"
 
 # Mode names for set-refresh (switching between 60 and 50 Hz).
-printf 'XORG_MODE=%q\nXORG_MODE_50=%q\n' "$MODE" "$MODE50" >> "$RUNTIME_ENV"
+printf 'XORG_MODE=%q\nXORG_MODE_50=%q\nXORG_OUTPUT_NAME=%q\n' "$MODE" "$MODE50" "${XORG_OUTPUT_NAME:-}" >> "$RUNTIME_ENV"
 log "Wrote $out (${GPU_TYPE}, ${MODE}${MODE50:+, PAL mode ${MODE50}})"
