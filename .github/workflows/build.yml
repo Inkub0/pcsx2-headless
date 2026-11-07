@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    # Files that never go into the image. Without this, the commit that pins a new image tag in
+    # truenas-custom-app.yaml would itself build another image with another tag.
+    # (Path filters don't apply to tag pushes, so releases always build.)
+    paths-ignore:
+      - "truenas-custom-app.yaml"
+      - "truenas/**"
+      - "**.md"
+      - "assets/**"
   pull_request:
   schedule:
     - cron: "17 4 * * 1"   # weekly rebuild picks up new PCSX2 and Sunshine releases
