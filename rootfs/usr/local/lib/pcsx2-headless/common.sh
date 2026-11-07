@@ -4,6 +4,9 @@ RUNTIME_DIR=/run/pcsx2-headless
 RUNTIME_ENV=$RUNTIME_DIR/env
 USER_RUNTIME_DIR=/tmp/runtime-pcsx2
 PULSE_SOCKET=$USER_RUNTIME_DIR/pulse/native
+# Messages from commands Sunshine runs (whose own output Sunshine discards) go here;
+# the "events" service copies them to the container log.
+EVENT_LOG=$USER_RUNTIME_DIR/events.log
 export DISPLAY=:0
 
 log()  { echo "[pcsx2-headless] $*" >&2; }   # stderr: never pollute redirected output (e.g. xorg.conf)

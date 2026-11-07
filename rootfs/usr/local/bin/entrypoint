@@ -21,6 +21,8 @@ usermod -o -u "$PUID" -g "$PGID" pcsx2 >/dev/null
 mkdir -p "$RUNTIME_DIR" "$USER_RUNTIME_DIR" /config
 chown "$PUID:$PGID" "$USER_RUNTIME_DIR"
 chmod 0700 "$USER_RUNTIME_DIR"
+: > "$EVENT_LOG"
+chown "$PUID:$PGID" "$EVENT_LOG"
 if ! setpriv --reuid="$PUID" --regid="$PGID" --clear-groups test -w /config; then
     chown "$PUID:$PGID" /config 2>/dev/null \
         || die "/config is not writable by UID $PUID. Give that user (TrueNAS: 'apps') write access to the config dataset."

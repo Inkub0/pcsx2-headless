@@ -6,6 +6,8 @@ set -uo pipefail
 # shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
 . /usr/local/lib/pcsx2-headless/common.sh
 load_runtime_env
+# Sunshine discards this command's output: send messages to the container log instead.
+[ -w "${EVENT_LOG:-}" ] && exec 2>>"$EVENT_LOG"
 
 want=${1:-60}
 case $want in
@@ -18,9 +20,17 @@ if [ -z "$mode" ]; then
     exit 0
 fi
 
-# The active output is the one with a position, e.g. "HDMI-A-0 connected 1920x1080+0+0 ..."
-out=$(xrandr --query 2>/dev/null \
-    | awk '($2 == "connected" || $2 == "disconnected") && /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/ {print $1; exit}')
+# The output gen-xorg-conf chose (AMD/Intel). Otherwise the primary active output, or the
+# first active one (an active output has a position, e.g. "1920x1080+0+0").
+out=${XORG_OUTPUT_NAME:-}
+if [ -z "$out" ]; then
+    out=$(xrandr --query 2>/dev/null | awk '
+        ($2 == "connected" || $2 == "disconnected") && /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/ {
+            if (/ primary /) { print $1; found = 1; exit }
+            if (first == "") first = $1
+        }
+        END { if (!found && first != "") print first }')
+fi
 if [ -z "$out" ]; then
     warn "set-refresh: no active display found"
     exit 0
