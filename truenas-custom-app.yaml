@@ -3,7 +3,7 @@
 # Change every line marked  # <-  first.
 services:
   pcsx2-headless:
-    image: ghcr.io/inkub0/pcsx2-headless:sha-e9a1675   # <- your published image
+    image: ghcr.io/inkub0/pcsx2-headless:sha-a6f0a9c   # <- your published image
     container_name: pcsx2-headless
     hostname: pcsx2-headless
     restart: unless-stopped
