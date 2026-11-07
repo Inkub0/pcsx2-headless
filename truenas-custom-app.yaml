@@ -52,3 +52,12 @@ services:
     #         - driver: nvidia
     #           count: all
     #           capabilities: [gpu]
+
+# Adds a "Sunshine Web UI" button to the app page. TrueNAS only reads this when the app is
+# first installed, not when it is edited later.
+x-portals:
+  - name: Sunshine Web UI
+    scheme: https
+    host: 0.0.0.0
+    port: 47990
+    path: /

@@ -54,13 +54,24 @@ You also need:
    - `Sunshine web UI accepts changes from: https://<server-ip>:47990`
    - `Found H.264 encoder: h264_vaapi` (or `h264_nvenc`)
    - all services in `RUNNING` state, and no `No BIOS found` / `No games found` warnings
-5. **Pair Moonlight:** open `https://<server-ip>:47990`, log in with `SUNSHINE_USER` / `SUNSHINE_PASS`,
+5. **Pair Moonlight:** open `https://<server-ip>:47990` (or click **Sunshine Web UI** on the app page), log in with `SUNSHINE_USER` / `SUNSHINE_PASS`,
    go to the **PIN** tab and enter the PIN Moonlight shows.
 6. **Play:** in Moonlight, start **PCSX2**. You get PCSX2's Big Picture game list.
    - **Quit a game:** press the controller's **Guide** button (Xbox / PS / Home) for the pause menu,
      then **Close Game**. If your Moonlight client keeps the Guide button for itself, start
      **Restart PCSX2** from Moonlight instead.
    - **Leave the stream:** Start + Select + L1 + R1 disconnects Moonlight; the game keeps running.
+
+**Optional, the icon in the TrueNAS Apps list.** Custom apps show a blank icon, and TrueNAS has
+no setting for it. As a workaround, after installing, edit
+`/mnt/.ix-apps/app_configs/pcsx2-headless/metadata.yaml` in the TrueNAS shell (with `sudo`) and add
+this line inside the `metadata:` block, indented like the lines around it:
+
+```yaml
+  icon: https://raw.githubusercontent.com/Inkub0/pcsx2-headless/main/assets/icon.png
+```
+
+Then refresh the TrueNAS page. This is unofficial: TrueNAS may reset it when you edit the app.
 
 Building your own image instead: fork this repo; the included GitHub workflow publishes
 `ghcr.io/<you>/pcsx2-headless`. Make the package public (GitHub profile > Packages > package
