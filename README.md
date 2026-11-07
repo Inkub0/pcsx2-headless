@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.png" width="128" alt="PCSX2 Headless icon"></p>
+
 # PCSX2 Headless
 
 Stream PS2 games from a headless server (TrueNAS SCALE or any Docker host) to any
@@ -159,3 +161,5 @@ truenas/ix-dev/community/...    TrueNAS catalog app definition
 
 PCSX2 is GPL-3.0 and Sunshine is GPL-3.0. Publishing this repository under GPL-3.0 keeps things simple.
 PCSX2 Headless is a community project, not affiliated with the PCSX2 or LizardByte teams.
+
+The icon is the PCSX2 logo by the [PCSX2 project](https://pcsx2.net) (GPL-3.0), recoloured red.
