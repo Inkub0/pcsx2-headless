@@ -88,6 +88,10 @@ up with the refresh. For PAL games:
 2. Start **PCSX2 (PAL 50 Hz)** instead of **PCSX2**. It switches the screen to 50 Hz for the
    session and back to 60 Hz when the stream ends.
 
+The image sets PCSX2's frame rates to the standard NTSC (59.94) and PAL (50) values and turns on
+"Sync to Host Refresh Rate", so PCSX2 adjusts its speed very slightly to match the screen and every
+game frame lines up with one screen refresh. These are re-applied on every start.
+
 For NTSC games, use **PCSX2** with Moonlight at 60 fps. If the two don't match, the app log
 says so (`Moonlight is streaming at 60 fps. Set Moonlight's frame rate to 50 ...`). A mismatch
 gives slightly uneven motion, but no tearing.

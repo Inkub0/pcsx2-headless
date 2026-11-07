@@ -20,6 +20,12 @@ set_ini() { crudini --set "$ini" "$1" "$2" "$3"; }
 set_ini Folders Bios /bios
 set_ini UI SetupWizardIncomplete false
 set_ini AutoUpdater CheckAtStartup false
+# Frame timing for a smooth stream: standard NTSC (59.94) and PAL (50) rates, and let PCSX2 adjust
+# its speed very slightly to the screen's refresh (59.93 Hz, or 49.99 Hz in the PAL entry), so each
+# game frame matches exactly one screen refresh. Needs VSync, which is on by default.
+set_ini EmuCore/GS FramerateNTSC 59.94
+set_ini EmuCore/GS FrameratePAL 50
+set_ini EmuCore/GS SyncToHostRefreshRate true
 [ -n "${PCSX2_RENDERER:-}" ] && set_ini EmuCore/GS Renderer "$PCSX2_RENDERER"
 [ -n "${PCSX2_UPSCALE:-}" ] && set_ini EmuCore/GS upscale_multiplier "$PCSX2_UPSCALE"
 
