@@ -143,19 +143,6 @@ sudo docker exec pcsx2-headless cat /tmp/Xorg.0.log
 sudo docker exec pcsx2-headless ls -la /bios /games
 ```
 
-## Submitting to the TrueNAS catalog
-
-The app definition lives in `truenas/ix-dev/community/pcsx2-headless/`, modelled on the
-official Steam Headless app and checked against TrueNAS app library 2.3.18.
-
-1. Fill in the `YOUR_...` placeholders in `app.yaml` and `ix_values.yaml`, and pin `ix_values.yaml`
-   to a released image tag.
-2. Open an issue on [truenas/apps](https://github.com/truenas/apps) proposing the app and naming
-   yourself as maintainer. Wait for approval.
-3. Fork truenas/apps, copy the folder into `ix-dev/community/`, and render it:
-   `./.github/scripts/ci.py --app pcsx2-headless --train community --test-file basic-values.yaml --render-only=true`
-4. Open the PR. TrueNAS hosts the icon; they'll tell you how to supply it.
-
 ## Repository layout
 
 ```
@@ -164,7 +151,7 @@ rootfs/usr/local/bin/           entrypoint and service start scripts
 rootfs/usr/local/share/...      first-run PCSX2 and Sunshine settings
 rootfs/etc/supervisor/          service definitions
 truenas-custom-app.yaml         TrueNAS "Install via YAML" file
-truenas/ix-dev/community/...    TrueNAS catalog app (for the PR)
+truenas/ix-dev/community/...    TrueNAS catalog app definition
 .github/workflows/build.yml     builds and publishes the image (weekly rebuild for new releases)
 ```
 
