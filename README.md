@@ -170,7 +170,10 @@ truenas/ix-dev/community/...    TrueNAS catalog app definition
 
 ## Licence
 
-PCSX2 is GPL-3.0 and Sunshine is GPL-3.0. Publishing this repository under GPL-3.0 keeps things simple.
-PCSX2 Headless is a community project, not affiliated with the PCSX2 or LizardByte teams.
+PCSX2 Headless is licensed under the GNU GPL version 3, see [LICENSE](LICENSE).
+It is a community project, not affiliated with or endorsed by the PCSX2 project or LizardByte.
+PCSX2 and Sunshine are downloaded from their official releases when the image is built, each
+under its own licence.
 
-The icon is the PCSX2 logo by the [PCSX2 project](https://pcsx2.net) (GPL-3.0), recoloured red.
+The icon is based on the PCSX2 logo, copyright the [PCSX2 Project](https://pcsx2.net/intellectualproperty/)
+and licensed under the GPL version 3 or later. It has been recoloured red and resized; see [NOTICE](NOTICE).

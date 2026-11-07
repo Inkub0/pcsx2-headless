@@ -1,0 +1,12 @@
+PCSX2 Headless
+Licensed under the GNU General Public License version 3 (see LICENSE).
+
+Not affiliated with or endorsed by the PCSX2 project or LizardByte (Sunshine).
+PCSX2 and Sunshine are separate programs downloaded from their official releases
+at build time, each under its own licence.
+
+Icon (assets/icon.png, assets/icon-512.png and the copy in the container image):
+  Based on the PCSX2 logo, copyright the PCSX2 Project, licensed under the
+  GNU GPL version 3 or later. Source: https://pcsx2.net/intellectualproperty/
+  Modified in November 2026: colours shifted to red (hue rotation), placed on a
+  square canvas and resized to 256 and 512 pixels.

@@ -82,6 +82,7 @@ RUN groupadd -g 568 pcsx2 \
     && useradd -u 568 -g 568 -d /config -M -s /bin/bash pcsx2
 
 COPY rootfs/ /
+COPY LICENSE NOTICE /usr/share/doc/pcsx2-headless/
 RUN chmod 0755 /usr/local/bin/* \
     && echo "$IMAGE_VERSION" > /etc/pcsx2-headless-version
 
