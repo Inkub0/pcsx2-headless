@@ -118,6 +118,7 @@ everything, including pairing.
 | `PCSX2_COVERS_STYLE` | `default` | `default` (flat) or `3d` box art |
 | `PCSX2_COVERS_URL` | empty | Your own cover source; must contain `${serial}` |
 | `SUNSHINE_ENCODER` | auto | Override Sunshine's encoder (`vaapi`, `nvenc`, `software`) |
+| `SUNSHINE_CAPTURE` | `x11` | Screen capture method. `kms` reads finished frames from the GPU and avoids tearing in the stream; `x11` is the fallback |
 | `ENABLE_UDEV` | `true` | Needed for Moonlight keyboard/mouse. Controllers work without it |
 | `INPUT_GID` | auto | Host gid of `/dev/input` nodes, if auto-detection guesses wrong |
 
@@ -140,6 +141,7 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `No BIOS found` / `No games found`, or the game list is empty | The volume path doesn't exist exactly as written (case matters) and Docker created an empty folder, or the `apps` user can't read it. |
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
 | The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin the new `sha-...` tag (see [Updating](#updating)). |
+| Tearing in the stream, also with V-Sync on in Moonlight | Set `SUNSHINE_CAPTURE: kms`. X11 capture can grab half-drawn frames. |
 | Black stream on AMD / Intel | The forced output isn't accepted by your card. An HDMI or DisplayPort dummy plug fixes it. |
 | No covers | Set `PCSX2_COVERS: "true"`. Covers appear after PCSX2 restarts (Moonlight: **Restart PCSX2**). |
 | The config folder looks empty over SMB | Older versions kept data in the hidden `.config` folder. Current versions move it to `PCSX2/` and `sunshine/` on start. |
