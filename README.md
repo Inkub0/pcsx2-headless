@@ -17,7 +17,9 @@ a one-time NVIDIA driver fetch on NVIDIA systems).
 - Sunshine (latest LizardByte release) with two apps: **PCSX2** and **Restart PCSX2**.
 - AMD and Intel via VAAPI, NVIDIA via NVENC, or software-only as a last resort.
 - Tear-free output: `TearFree` on AMD, `ForceFullCompositionPipeline` on NVIDIA.
-- Settings, memory cards, save states and Sunshine pairing persist in `/config`.
+- Settings, memory cards, save states and Sunshine pairing persist in `/config`, in visible folders:
+  `PCSX2/` (settings in `inis/`, `memcards/`, `sstates/`, `covers/`) and `sunshine/` (settings, pairing).
+  Older installs that kept them in the hidden `.config` folder are moved there automatically.
 
 No BIOS or games are included. Dump them from hardware you own.
 

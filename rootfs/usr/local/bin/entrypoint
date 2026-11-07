@@ -139,6 +139,29 @@ for d in /config/.config /config/.cache /config/.local/share; do
     [ -d "$d" ] || { mkdir -p "$d"; chown "$PUID:$PGID" "$d" 2>/dev/null || true; }
 done
 chown "$PUID:$PGID" /config/.local 2>/dev/null || true
+
+# Keep PCSX2 and Sunshine data in visible folders (/config/PCSX2, /config/sunshine) so they show
+# up over SMB (dot-folders are hidden there). The XDG paths under .config link to them; data in
+# the old location is moved once.
+for app in PCSX2 sunshine; do
+    real=/config/$app link=/config/.config/$app
+    if [ -d "$link" ] && [ ! -L "$link" ]; then
+        if [ -e "$real" ]; then
+            warn "Both $link and $real exist; still using $link. Merge them by hand to switch to $real."
+            continue
+        fi
+        mv "$link" "$real"
+        log "Moved $app data to $real (now visible in your /config folder)"
+    fi
+    if [ ! -e "$real" ]; then
+        mkdir -p "$real"
+        chown "$PUID:$PGID" "$real" 2>/dev/null || true
+    fi
+    if [ ! -e "$link" ] && [ ! -L "$link" ]; then
+        ln -s "../$app" "$link"
+        chown -h "$PUID:$PGID" "$link" 2>/dev/null || true
+    fi
+done
 as_user /usr/local/bin/seed-config
 
 if [ -n "${SUNSHINE_PASS:-}" ]; then
