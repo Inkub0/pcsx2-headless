@@ -5,8 +5,10 @@
 #
 FROM debian:trixie-slim
 
-ARG PCSX2_VERSION=latest
-ARG SUNSHINE_VERSION=latest
+# Pinned upstream releases (GitHub release tags). Bump them to update; "latest" also works.
+# .github/workflows/check-upstream.yml opens an issue when a newer stable release is out.
+ARG PCSX2_VERSION=v2.8.2
+ARG SUNSHINE_VERSION=v2026.914.233613
 ARG IMAGE_VERSION=dev
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
