@@ -42,6 +42,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
+# Newer Mesa (Vulkan, VAAPI, GL) from trixie-backports; everything else stays on trixie.
+# -t trixie-backports lets apt take any library the newer Mesa needs from backports too.
+RUN set -eu; \
+    signed_by=$(sed -n 's/^Signed-By:[[:space:]]*//p' /etc/apt/sources.list.d/debian.sources | head -n1); \
+    printf 'Types: deb\nURIs: http://deb.debian.org/debian\nSuites: trixie-backports\nComponents: main\nSigned-By: %s\n' \
+        "$signed_by" > /etc/apt/sources.list.d/backports.sources; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends -t trixie-backports \
+        libglx-mesa0 libegl-mesa0 libgl1-mesa-dri libgbm1 mesa-vulkan-drivers mesa-va-drivers; \
+    dpkg-query -W -f '${Package} ${Version}\n' mesa-vulkan-drivers mesa-va-drivers libgl1-mesa-dri; \
+    rm -rf /var/lib/apt/lists/*
+
 # Sunshine: official LizardByte .deb for Debian trixie.
 # An optional build secret "github_token" avoids GitHub API rate limits in CI.
 # No "set -x" in these steps: it would print the token into the build log.
