@@ -17,5 +17,6 @@ export QT_QPA_PLATFORM=xcb
 # Read controllers straight from /dev/input instead of relying on udev inside the container.
 export SDL_JOYSTICK_DISABLE_UDEV=${SDL_JOYSTICK_DISABLE_UDEV:-1}
 
+boost_priority -10 PCSX2
 # shellcheck disable=SC2086
 exec_as_user /opt/pcsx2/AppRun -bigpicture -fullscreen ${PCSX2_ARGS:-}

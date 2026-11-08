@@ -50,6 +50,17 @@ cvt_rb() {
     }'
 }
 
+# Raise this process's CPU priority before it starts a service, so background work on the
+# server (ZFS scrubs, other apps) takes less time from the stream. Needs CAP_SYS_NICE; the
+# priority carries over to the service, also after it switches to the pcsx2 user.
+# PRIORITY_BOOST=false turns it off.
+boost_priority() {
+    is_true "${PRIORITY_BOOST:-true}" || return 0
+    if ! renice -n "${1:--10}" -p $$ >/dev/null 2>&1; then
+        warn "Could not raise the priority of $2 (the container needs the SYS_NICE capability)"
+    fi
+}
+
 # Run a command as the pcsx2 user (with its supplementary groups) and return.
 # /usr/local/bin/user-env sets HOME, XDG_* and audio/display variables and drops SUNSHINE_PASS.
 as_user() {

@@ -130,6 +130,7 @@ everything, including pairing.
 | `RESOLUTION` | `1920x1080` | Screen mode when no stream is running, and on NVIDIA. Any size from 640x480 to 7680x4320 |
 | `REFRESH_RATE` | `60` | Refresh rate of that mode, 24 to 240 |
 | `DISPLAY_MATCH` | `full` | When a stream starts: take Moonlight's resolution and frame rate (`full`), only its frame rate (`refresh`), or change nothing (`off`) |
+| `PRIORITY_BOOST` | `true` | Run Xorg, Sunshine and PCSX2 at a higher CPU priority, so other work on the server takes less time from the stream. Needs the `SYS_NICE` capability (in the sample YAML) |
 | `GPU_TYPE` | `auto` | `auto`, `amd`, `intel`, `nvidia`, `dummy` (software only) |
 | `NUMA_NODE` | `auto` | Servers with two or more CPU sockets: run everything on the CPU the GPU is attached to (`auto`), on a given node (`0`, `1`, ...), or anywhere (`off`). No effect on single-socket machines |
 | `TEARFREE` | `true` | Removes tearing at the cost of a little latency |

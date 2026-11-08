@@ -18,6 +18,7 @@ if is_true "${ENABLE_UDEV:-true}"; then
     fi
 fi
 
+boost_priority -10 Xorg
 log "Starting Xorg (${GPU_TYPE:-?}, ${RESOLUTION:-1920x1080}@${REFRESH_RATE:-60}); full log in /tmp/Xorg.0.log"
 # -nolisten local: no abstract socket, so with host networking nothing outside
 # the container can reach this X server.

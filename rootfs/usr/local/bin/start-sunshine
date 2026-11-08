@@ -4,4 +4,5 @@ set -euo pipefail
 
 wait_for_x 60 || die "X server did not start; see /tmp/Xorg.0.log"
 wait_for_file "$PULSE_SOCKET" 30 || warn "Audio server not ready: the stream may have no sound"
+boost_priority -10 Sunshine
 exec_as_user sunshine /config/.config/sunshine/sunshine.conf
