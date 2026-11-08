@@ -42,13 +42,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Sunshine: official LizardByte .deb for Debian trixie.
 # An optional build secret "github_token" avoids GitHub API rate limits in CI.
+# No "set -x" in these steps: it would print the token into the build log.
 RUN --mount=type=secret,id=github_token \
-    set -eux; \
+    set -eu; \
     auth=(); [ -s /run/secrets/github_token ] && auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)"); \
     rel=latest; [ "$SUNSHINE_VERSION" != latest ] && rel="tags/$SUNSHINE_VERSION"; \
-    url=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/LizardByte/Sunshine/releases/$rel" \
-          | jq -r '.assets[].browser_download_url | select(endswith("+debiantrixie_amd64.deb"))' | head -n1); \
-    test -n "$url"; \
+    release=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/LizardByte/Sunshine/releases/$rel"); \
+    url=$(jq -r '.assets[] | select(.name | endswith("debiantrixie_amd64.deb")) | .browser_download_url' <<<"$release" | head -n1); \
+    if [ -z "$url" ]; then echo "No Debian trixie package in Sunshine release $(jq -r .tag_name <<<"$release"). Assets:" >&2; jq -r '.assets[].name' <<<"$release" >&2; exit 1; fi; \
+    echo "Sunshine: $url"; \
     curl -fsSL --retry 5 --retry-all-errors -o /tmp/sunshine.deb "$url"; \
     apt-get update; \
     apt-get install -y --no-install-recommends /tmp/sunshine.deb; \
@@ -57,12 +59,13 @@ RUN --mount=type=secret,id=github_token \
 
 # PCSX2: official Qt AppImage, unpacked so it runs without FUSE or a Flatpak sandbox.
 RUN --mount=type=secret,id=github_token \
-    set -eux; \
+    set -eu; \
     auth=(); [ -s /run/secrets/github_token ] && auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)"); \
     rel=latest; [ "$PCSX2_VERSION" != latest ] && rel="tags/$PCSX2_VERSION"; \
-    url=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/PCSX2/pcsx2/releases/$rel" \
-          | jq -r '.assets[].browser_download_url | select(test("linux-appimage-x64-Qt\\.AppImage$"))' | head -n1); \
-    test -n "$url"; \
+    release=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/PCSX2/pcsx2/releases/$rel"); \
+    url=$(jq -r '.assets[] | select(.name | endswith("linux-appimage-x64-Qt.AppImage")) | .browser_download_url' <<<"$release" | head -n1); \
+    if [ -z "$url" ]; then echo "No Linux AppImage in PCSX2 release $(jq -r .tag_name <<<"$release"). Assets:" >&2; jq -r '.assets[].name' <<<"$release" >&2; exit 1; fi; \
+    echo "PCSX2: $url"; \
     curl -fsSL --retry 5 --retry-all-errors -o /tmp/pcsx2.AppImage "$url"; \
     chmod +x /tmp/pcsx2.AppImage; \
     cd /opt; /tmp/pcsx2.AppImage --appimage-extract >/dev/null; \
