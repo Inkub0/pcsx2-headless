@@ -12,6 +12,7 @@ pcsx2:
   sunshine_allowed_origins: https://truenas.local:47990
   resolution: "1920x1080"
   gpu_type: dummy
+  numa_node: auto
   tearfree: false
   covers: true
   covers_style: default

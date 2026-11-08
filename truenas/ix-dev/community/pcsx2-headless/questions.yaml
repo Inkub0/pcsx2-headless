@@ -99,6 +99,15 @@ questions:
                 description: NVIDIA
               - value: "dummy"
                 description: No GPU (software rendering)
+        - variable: numa_node
+          label: CPU Socket (NUMA Node)
+          description: |
+            Only matters on servers with two or more CPU sockets. auto runs PCSX2 and Sunshine on the CPU
+            the GPU is attached to; off lets them run on any CPU; a number (0, 1, ...) picks that node.
+          schema:
+            type: string
+            default: "auto"
+            required: true
         - variable: tearfree
           label: Tear-Free
           description: Extra tear protection on the virtual screen at the cost of a frame of latency. Not needed in most setups.

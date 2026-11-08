@@ -53,6 +53,7 @@
 {% do c1.environment.add_env("RESOLUTION", values.pcsx2.resolution) %}
 {% do c1.environment.add_env("REFRESH_RATE", 60) %}
 {% do c1.environment.add_env("GPU_TYPE", values.pcsx2.gpu_type) %}
+{% do c1.environment.add_env("NUMA_NODE", values.pcsx2.numa_node) %}
 {% do c1.environment.add_env("TEARFREE", values.pcsx2.tearfree) %}
 {% do c1.environment.add_env("PCSX2_COVERS", values.pcsx2.covers) %}
 {% if values.pcsx2.covers %}
