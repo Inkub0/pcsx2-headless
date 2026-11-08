@@ -104,3 +104,12 @@ if [ -n "$origins" ]; then
     set_conf csrf_allowed_origins "$origins"
     log "Sunshine web UI accepts changes from: $origins"
 fi
+
+# Who may open the web UI: lan = private addresses (10.*, 172.16-31.*, 192.168.*), wan = any
+# address (e.g. VPN or public IPv6), pc = this server only. Moonlight streaming is not affected.
+webui=${SUNSHINE_WEBUI_ACCESS:-lan}
+case $webui in
+    lan|wan|pc) ;;
+    *) warn "SUNSHINE_WEBUI_ACCESS must be lan, wan or pc (got '$webui'); using lan"; webui=lan ;;
+esac
+set_conf origin_web_ui_allowed "$webui"

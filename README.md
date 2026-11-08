@@ -122,6 +122,7 @@ everything, including pairing.
 |---|---|---|
 | `SUNSHINE_USER` / `SUNSHINE_PASS` | `admin` / empty | Sunshine web UI login. Avoid quotes, `$` and `\`. |
 | `SUNSHINE_ALLOWED_ORIGINS` | empty | Extra web UI addresses Sunshine accepts changes from, e.g. `https://truenas.local:47990`. The server's own IPs are added automatically |
+| `SUNSHINE_WEBUI_ACCESS` | `lan` | Who can open the Sunshine web UI: `lan` (private addresses: `10.*`, `172.16-31.*`, `192.168.*`), `wan` (any address, e.g. a VPN; don't expose port 47990 to the internet) or `pc` (the server only). Streaming isn't affected |
 | `RESOLUTION` | `1920x1080` | `1280x720`, `1920x1080`, `2560x1440` or `3840x2160` |
 | `REFRESH_RATE` | `60` | Other rates need `cvt`, which isn't installed by default |
 | `GPU_TYPE` | `auto` | `auto`, `amd`, `intel`, `nvidia`, `dummy` (software only) |
@@ -159,6 +160,7 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `device is not DRM master`, `no screens found` | Another program drives the GPU's display (e.g. Steam Headless). Stop it, then restart this app. See [Before you start](#before-you-start). |
 | `No BIOS found` / `No games found`, or the game list is empty | The volume path doesn't exist exactly as written (case matters) and Docker created an empty folder, or the `apps` user can't read it. |
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
+| Sunshine web UI says access denied, e.g. over a VPN | Your address isn't a private LAN address. Set `SUNSHINE_WEBUI_ACCESS: wan`. |
 | The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin the new `sha-...` tag (see [Updating](#updating)). |
 | Tearing in PAL games only | Start **PCSX2 (PAL 50 Hz)** in Moonlight and set Moonlight's frame rate to 50. See [PAL games](#pal-games-50-hz). |
 | Tearing in the stream, also with V-Sync on in Moonlight | Make sure `SUNSHINE_CAPTURE` is not set to `x11`. X11 capture can grab half-drawn frames. |

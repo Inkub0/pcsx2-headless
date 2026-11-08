@@ -28,6 +28,7 @@ services:
       SUNSHINE_USER: admin
       SUNSHINE_PASS: change-me           # <- Sunshine web UI password (no quotes, $ or \)
       # SUNSHINE_ALLOWED_ORIGINS: https://truenas.local:47990   # only if you open the web UI by hostname; IPs are automatic
+      # SUNSHINE_WEBUI_ACCESS: wan       # only if you open the web UI from outside your LAN, e.g. over a VPN
       RESOLUTION: 1920x1080              # 1280x720 | 1920x1080 | 2560x1440 | 3840x2160
       GPU_TYPE: auto                     # auto | amd | intel | nvidia | dummy
       TEARFREE: "false"
