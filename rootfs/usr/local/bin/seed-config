@@ -77,6 +77,15 @@ case $capture in
 esac
 set_conf capture "$capture"
 
+# VA-API speed/quality trade-off (AMD/Intel). Only enforced when set, so the web UI setting
+# is kept otherwise.
+if [ -n "${SUNSHINE_VAAPI_QUALITY:-}" ]; then
+    case ${SUNSHINE_VAAPI_QUALITY,,} in
+        auto|speed|balanced|quality) set_conf vaapi_quality "${SUNSHINE_VAAPI_QUALITY,,}" ;;
+        *) warn "SUNSHINE_VAAPI_QUALITY must be auto, speed, balanced or quality (got '$SUNSHINE_VAAPI_QUALITY')" ;;
+    esac
+fi
+
 encoder=${SUNSHINE_ENCODER:-}
 if [ -z "$encoder" ]; then
     case $GPU_TYPE in

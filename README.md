@@ -144,6 +144,7 @@ everything, including pairing.
 | `PCSX2_COVERS` | `false` | `true` downloads missing covers for your games on start (from [xlenore/ps2-covers](https://github.com/xlenore/ps2-covers)); they show after PCSX2 restarts |
 | `PCSX2_COVERS_STYLE` | `default` | `default` (flat) or `3d` box art |
 | `PCSX2_COVERS_URL` | empty | Your own cover source; must contain `${serial}` |
+| `SUNSHINE_VAAPI_QUALITY` | empty | AMD/Intel encoder trade-off: `speed`, `balanced`, `quality` or `auto`. Empty keeps the web UI setting |
 | `SUNSHINE_ENCODER` | auto | Override Sunshine's encoder (`vaapi`, `nvenc`, `software`) |
 | `SUNSHINE_CAPTURE` | `kms` | Screen capture method. `kms` reads finished frames from the GPU and avoids tearing in the stream; `x11` is the fallback if kms capture fails |
 | `ENABLE_UDEV` | `true` | Needed for Moonlight keyboard/mouse. Controllers work without it |
