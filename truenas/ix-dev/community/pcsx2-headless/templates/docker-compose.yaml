@@ -38,17 +38,26 @@
 {% do c1.set_shm_size_mb(values.pcsx2.shm_size_mb) %}
 {% do c1.set_hostname(values.consts.pcsx2_container_name) %}
 
-{% do c1.healthcheck.set_test("curl", {"port": 47990, "scheme": "https"}) %}
+{# TCP check: an HTTPS check without credentials fills the Sunshine log with 401 errors #}
+{% do c1.healthcheck.set_test("tcp", {"port": 47990}) %}
 
 {% do c1.environment.add_env("PUID", values.run_as.user) %}
 {% do c1.environment.add_env("PGID", values.run_as.group) %}
 {% do c1.environment.add_env("SUNSHINE_USER", values.pcsx2.sunshine_username) %}
 {% do c1.environment.add_env("SUNSHINE_PASS", values.pcsx2.sunshine_password) %}
 {% do c1.environment.add_env("SUNSHINE_NAME", values.consts.pcsx2_container_name) %}
+{% do c1.environment.add_env("SUNSHINE_WEBUI_ACCESS", values.pcsx2.sunshine_webui_access) %}
+{% if values.pcsx2.sunshine_allowed_origins %}
+  {% do c1.environment.add_env("SUNSHINE_ALLOWED_ORIGINS", values.pcsx2.sunshine_allowed_origins) %}
+{% endif %}
 {% do c1.environment.add_env("RESOLUTION", values.pcsx2.resolution) %}
 {% do c1.environment.add_env("REFRESH_RATE", 60) %}
 {% do c1.environment.add_env("GPU_TYPE", values.pcsx2.gpu_type) %}
 {% do c1.environment.add_env("TEARFREE", values.pcsx2.tearfree) %}
+{% do c1.environment.add_env("PCSX2_COVERS", values.pcsx2.covers) %}
+{% if values.pcsx2.covers %}
+  {% do c1.environment.add_env("PCSX2_COVERS_STYLE", values.pcsx2.covers_style) %}
+{% endif %}
 {% do c1.environment.add_user_envs(values.pcsx2.additional_envs) %}
 
 {% do c1.devices.add_device("/dev/uinput", "/dev/uinput") %}

@@ -43,6 +43,28 @@ questions:
             required: true
             private: true
             default: ""
+        - variable: sunshine_webui_access
+          label: Sunshine Web UI Access
+          description: Who can open the Sunshine web UI. Moonlight streaming is not affected.
+          schema:
+            type: string
+            default: "lan"
+            required: true
+            enum:
+              - value: "lan"
+                description: LAN only (10.*, 172.16-31.*, 192.168.*)
+              - value: "wan"
+                description: Any address (e.g. over a VPN), do not expose port 47990 to the internet
+              - value: "pc"
+                description: This server only
+        - variable: sunshine_allowed_origins
+          label: Extra Web UI Addresses
+          description: |
+            Comma-separated addresses you open the Sunshine web UI with, other than the server's IPs
+            (which are added automatically), e.g. https://truenas.local:47990.
+          schema:
+            type: string
+            default: ""
         - variable: resolution
           label: Resolution
           description: Resolution of the virtual screen that gets streamed.
@@ -79,10 +101,28 @@ questions:
                 description: No GPU (software rendering)
         - variable: tearfree
           label: Tear-Free
-          description: Removes screen tearing at the cost of a little latency.
+          description: Extra tear protection on the virtual screen at the cost of a frame of latency. Not needed in most setups.
           schema:
             type: boolean
-            default: true
+            default: false
+        - variable: covers
+          label: Download Covers
+          description: Download missing cover art for your games on start (from xlenore/ps2-covers).
+          schema:
+            type: boolean
+            default: false
+        - variable: covers_style
+          label: Cover Style
+          schema:
+            type: string
+            default: "default"
+            required: true
+            show_if: [["covers", "=", true]]
+            enum:
+              - value: "default"
+                description: Flat covers
+              - value: "3d"
+                description: 3D box art
         - variable: shm_size_mb
           label: SHM Size (MB)
           description: Shared memory size.

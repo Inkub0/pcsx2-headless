@@ -8,9 +8,13 @@ TZ: Etc/UTC
 pcsx2:
   sunshine_username: admin
   sunshine_password: pcsx2-headless-password
+  sunshine_webui_access: lan
+  sunshine_allowed_origins: https://truenas.local:47990
   resolution: "1920x1080"
   gpu_type: dummy
-  tearfree: true
+  tearfree: false
+  covers: true
+  covers_style: default
   shm_size_mb: 2048
   additional_envs: []
 
