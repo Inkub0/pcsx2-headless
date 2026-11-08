@@ -189,7 +189,11 @@ choose_numa_node() {
     case $want in off|none|no|false) return 0 ;; esac
     nodes=$( { find /sys/devices/system/node -maxdepth 1 -name 'node[0-9]*' 2>/dev/null || true; } | wc -l)
     if [ "$nodes" -le 1 ]; then
-        [ "$want" = auto ] || warn "NUMA_NODE=$want, but this machine has a single NUMA node; not pinning"
+        if [ "$want" = auto ]; then
+            log "NUMA: the system reports ${nodes} NUMA node(s); nothing to pin"
+        else
+            warn "NUMA_NODE=$want, but this machine has a single NUMA node; not pinning"
+        fi
         return 0
     fi
     if [ "$want" = auto ]; then
