@@ -22,6 +22,7 @@ capabilities:
   name: SYS_NICE
 - description: PCSX2 Headless is able to configure tty devices
   name: SYS_TTY_CONFIG
+changelog_url: https://github.com/Inkub0/pcsx2-headless/releases
 categories:
 - games
 date_added: '2026-11-06'
@@ -42,11 +43,11 @@ keywords:
 - sunshine
 - moonlight
 lib_version: 2.3.18
-lib_version_hash: ed9839f681342ae8ca5f8c4c860ae22d0845a0919f472ba780d6edbc838f2633
+lib_version_hash: ''
 maintainers:
-- email: YOUR_EMAIL
-  name: YOUR_NAME
-  url: https://github.com/Inkub0
+- email: dev@truenas.com
+  name: truenas
+  url: https://www.truenas.com/
 name: pcsx2-headless
 run_as_context:
 - description: Container [pcsx2-headless] starts as root to set up the display and devices, then runs PCSX2 and Sunshine as the configured user.
