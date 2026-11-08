@@ -46,9 +46,8 @@ You also need:
    - **Paths are case-sensitive.** If a path in the YAML doesn't exist exactly as written, Docker
      silently creates an empty folder there. Check with `ls -la <path>` in the TrueNAS shell.
 2. **Edit `truenas-custom-app.yaml`.** Change the lines marked `# <-`: the three volume paths,
-   `SUNSHINE_PASS` and `TZ`. Pin the image to the newest `sha-...` tag from the
-   [package page](https://github.com/users/Inkub0/packages/container/package/pcsx2-headless),
-   e.g. `ghcr.io/inkub0/pcsx2-headless:sha-1a2b3c4` (see [Updating](#updating)). On NVIDIA, uncomment the `deploy:` block.
+   `SUNSHINE_PASS` and `TZ`. The image is pinned to a release, e.g.
+   `ghcr.io/inkub0/pcsx2-headless:1.0.0` (see [Updating](#updating)). On NVIDIA, uncomment the `deploy:` block.
 3. **Install:** Apps > Discover Apps > Custom App > **Install via YAML**, paste the file and save.
 4. **Check the log** (Apps > Installed > pcsx2-headless > Logs). Within a minute you should see:
    - `GPU: amd (card0, renderD128)` (or `intel` / `nvidia`)
@@ -98,9 +97,13 @@ gives slightly uneven motion, but no tearing.
 
 ## Updating
 
-Every push to `main` builds a new image tagged `latest` and `sha-<commit>`. TrueNAS keeps using
-its cached copy of `latest`, so **pin the `sha-...` tag** in the YAML and change it to update
-(Apps > pcsx2-headless > Edit). Changing the tag makes TrueNAS pull the new image.
+Each [release](https://github.com/Inkub0/pcsx2-headless/releases) has its own image tag, e.g.
+`1.0.0`. To update, change the tag in the YAML to the new version (Apps > pcsx2-headless > Edit);
+changing the tag makes TrueNAS pull the new image. Avoid `latest`: TrueNAS keeps using its
+cached copy.
+
+Every push to `main` also builds an image tagged `sha-<commit>`, for testing changes before
+a release.
 
 ## Your files
 
@@ -161,7 +164,7 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `No BIOS found` / `No games found`, or the game list is empty | The volume path doesn't exist exactly as written (case matters) and Docker created an empty folder, or the `apps` user can't read it. |
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
 | Sunshine web UI says access denied, e.g. over a VPN | Your address isn't a private LAN address. Set `SUNSHINE_WEBUI_ACCESS: wan`. |
-| The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin the new `sha-...` tag (see [Updating](#updating)). |
+| The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin a version tag such as `1.0.0` instead of `latest` (see [Updating](#updating)). |
 | Tearing in PAL games only | Start **PCSX2 (PAL 50 Hz)** in Moonlight and set Moonlight's frame rate to 50. See [PAL games](#pal-games-50-hz). |
 | Tearing in the stream, also with V-Sync on in Moonlight | Make sure `SUNSHINE_CAPTURE` is not set to `x11`. X11 capture can grab half-drawn frames. |
 | Black stream or Sunshine log says kms capture failed | Set `SUNSHINE_CAPTURE: x11`. |
