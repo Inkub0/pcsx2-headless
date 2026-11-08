@@ -47,7 +47,7 @@ RUN --mount=type=secret,id=github_token \
     auth=(); [ -s /run/secrets/github_token ] && auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)"); \
     rel=latest; [ "$SUNSHINE_VERSION" != latest ] && rel="tags/$SUNSHINE_VERSION"; \
     url=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/LizardByte/Sunshine/releases/$rel" \
-          | jq -r '.assets[].browser_download_url | select(test("debian-?trixie[-_]amd64\\.deb$"))' | head -n1); \
+          | jq -r '.assets[].browser_download_url | select(endswith("+debiantrixie_amd64.deb"))' | head -n1); \
     test -n "$url"; \
     curl -fsSL --retry 5 --retry-all-errors -o /tmp/sunshine.deb "$url"; \
     apt-get update; \
