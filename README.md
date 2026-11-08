@@ -17,8 +17,9 @@ a one-time NVIDIA driver fetch on NVIDIA systems and optional covers).
 - PCSX2 (official AppImage, latest stable at build time) in Big Picture mode, already set up:
   BIOS from `/bios`, games from `/games`, Vulkan renderer, 3x resolution, first controller mapped,
   Guide button opens the pause menu.
-- Sunshine (latest LizardByte release) with two apps: **PCSX2** (60 Hz) and **PCSX2 (PAL 50 Hz)**
-  for PAL games, which switches the screen to 50 Hz so they don't tear.
+- Sunshine (LizardByte) with one app, **PCSX2**. When a stream starts, the screen switches to the
+  resolution and frame rate Moonlight asks for (e.g. 1280x800 for a Steam Deck, 50 fps for PAL
+  games), so there is no scaling and no refresh mismatch.
 - Hardware encoding: VAAPI on AMD and Intel, NVENC on NVIDIA (software only as a last resort).
 - Optional cover download for your games (`PCSX2_COVERS`).
 - Settings, memory cards, save states and pairing kept in your config folder (see [Your files](#your-files)).
@@ -79,21 +80,21 @@ settings) so TrueNAS can pull it without logging in.
 
 ## PAL games (50 Hz)
 
-PAL games run at 50 frames per second. On a 60 Hz screen they tear, because frames can't line
-up with the refresh. For PAL games:
-
-1. In Moonlight, set the frame rate to **50** (Settings > Frame rate; Moonlight 5.0 and later
-   accept custom values).
-2. Start **PCSX2 (PAL 50 Hz)** instead of **PCSX2**. It switches the screen to 50 Hz for the
-   session and back to 60 Hz when the stream ends.
+PAL games run at 50 frames per second. On a 60 Hz screen they tear or judder, because frames can't
+line up with the refresh. For PAL games, set Moonlight's frame rate to **50** (Settings > Frame
+rate; Moonlight 5.0 and later accept custom values) and start **PCSX2** as usual: the screen
+follows Moonlight's frame rate for the session and goes back to the configured mode when the
+stream ends. For NTSC games, use 60.
 
 The image sets PCSX2's frame rates to the standard NTSC (59.94) and PAL (50) values and turns on
 "Sync to Host Refresh Rate", so PCSX2 adjusts its speed very slightly to match the screen and every
 game frame lines up with one screen refresh. These are re-applied on every start.
 
-For NTSC games, use **PCSX2** with Moonlight at 60 fps. If the two don't match, the app log
-says so (`Moonlight is streaming at 60 fps. Set Moonlight's frame rate to 50 ...`). A mismatch
-gives slightly uneven motion, but no tearing.
+On AMD and Intel the screen also takes Moonlight's resolution. NVIDIA cards can't add screen modes
+while running, so there only the frame rate follows (50 or 60) at the configured `RESOLUTION`. If
+Moonlight asks for more than the card's output can do (e.g. 4K at 120 fps over HDMI), the
+configured mode is used and the app log says so. Moonlight only sends its settings when it
+starts PCSX2: after changing them, quit the app in Moonlight and start it again.
 
 ## Updating
 
@@ -126,8 +127,9 @@ everything, including pairing.
 | `SUNSHINE_USER` / `SUNSHINE_PASS` | `admin` / empty | Sunshine web UI login. Avoid quotes, `$` and `\`. |
 | `SUNSHINE_ALLOWED_ORIGINS` | empty | Extra web UI addresses Sunshine accepts changes from, e.g. `https://truenas.local:47990`. The server's own IPs are added automatically |
 | `SUNSHINE_WEBUI_ACCESS` | `lan` | Who can open the Sunshine web UI: `lan` (private addresses: `10.*`, `172.16-31.*`, `192.168.*`), `wan` (any address, e.g. a VPN; don't expose port 47990 to the internet) or `pc` (the server only). Streaming isn't affected |
-| `RESOLUTION` | `1920x1080` | `1280x720`, `1920x1080`, `2560x1440` or `3840x2160` |
-| `REFRESH_RATE` | `60` | Other rates need `cvt`, which isn't installed by default |
+| `RESOLUTION` | `1920x1080` | Screen mode when no stream is running, and on NVIDIA. Any size from 640x480 to 7680x4320 |
+| `REFRESH_RATE` | `60` | Refresh rate of that mode, 24 to 240 |
+| `DISPLAY_MATCH` | `full` | When a stream starts: take Moonlight's resolution and frame rate (`full`), only its frame rate (`refresh`), or change nothing (`off`) |
 | `GPU_TYPE` | `auto` | `auto`, `amd`, `intel`, `nvidia`, `dummy` (software only) |
 | `NUMA_NODE` | `auto` | Servers with two or more CPU sockets: run everything on the CPU the GPU is attached to (`auto`), on a given node (`0`, `1`, ...), or anywhere (`off`). No effect on single-socket machines |
 | `TEARFREE` | `true` | Removes tearing at the cost of a little latency |
@@ -166,7 +168,7 @@ Every line from this image's own scripts starts with `[pcsx2-headless]`.
 | `CSRF Protection Error` in the Sunshine web UI | You opened the UI by a hostname. Add it with `SUNSHINE_ALLOWED_ORIGINS`, e.g. `https://truenas.local:47990`, or use the IP address. |
 | Sunshine web UI says access denied, e.g. over a VPN | Your address isn't a private LAN address. Set `SUNSHINE_WEBUI_ACCESS: wan`. |
 | The log's first line shows an old commit after updating | TrueNAS reused its cached image. Pin a version tag such as `1.0.0` instead of `latest` (see [Updating](#updating)). |
-| Tearing in PAL games only | Start **PCSX2 (PAL 50 Hz)** in Moonlight and set Moonlight's frame rate to 50. See [PAL games](#pal-games-50-hz). |
+| Tearing or judder in PAL games only | Set Moonlight's frame rate to 50, then quit and restart PCSX2 in Moonlight. See [PAL games](#pal-games-50-hz). |
 | Tearing in the stream, also with V-Sync on in Moonlight | Make sure `SUNSHINE_CAPTURE` is not set to `x11`. X11 capture can grab half-drawn frames. |
 | Black stream or Sunshine log says kms capture failed | Set `SUNSHINE_CAPTURE: x11`. |
 | Black stream on AMD / Intel | The forced output isn't accepted by your card. An HDMI or DisplayPort dummy plug fixes it. |

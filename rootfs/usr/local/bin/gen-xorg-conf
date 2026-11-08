@@ -19,31 +19,15 @@ h=${res#*x}
 tearfree=false; is_true "${TEARFREE:-true}" && tearfree=true
 autoadd=false; is_true "${ENABLE_UDEV:-true}" && autoadd=true
 
-# CVT reduced-blanking modelines for the common 60 Hz modes; cvt(1) for anything else.
-case "${w}x${h}@${rate}" in
-    1280x720@60)  ML='"1280x720R" 64.00 1280 1328 1360 1440 720 723 728 741 +hsync -vsync' ;;
-    1920x1080@60) ML='"1920x1080R" 138.50 1920 1968 2000 2080 1080 1083 1088 1111 +hsync -vsync' ;;
-    2560x1440@60) ML='"2560x1440R" 241.50 2560 2608 2640 2720 1440 1443 1448 1481 +hsync -vsync' ;;
-    3840x2160@60) ML='"3840x2160R" 533.00 3840 3888 3920 4000 2160 2163 2168 2222 +hsync -vsync' ;;
-    *)
-        command -v cvt >/dev/null 2>&1 \
-            || die "No built-in mode for ${w}x${h}@${rate}. Use 1280x720, 1920x1080, 2560x1440 or 3840x2160 at 60 Hz."
-        ML=$(cvt "$w" "$h" "$rate" | sed -n 's/^Modeline //p')
-        ;;
-esac
+# CVT reduced-blanking modelines, computed for any resolution and refresh rate (cvt_rb in
+# common.sh). A 50 Hz mode sits next to the main one for PAL games; set-mode adds other modes
+# (the Moonlight client's resolution and frame rate) at run time with xrandr.
+(( w >= 640 && h >= 480 && w <= 7680 && h <= 4320 )) || die "RESOLUTION must be between 640x480 and 7680x4320 (got '$res')"
+(( rate >= 24 && rate <= 240 )) || die "REFRESH_RATE must be between 24 and 240 (got '$rate')"
+ML=$(cvt_rb "$w" "$h" "$rate")
 MODE=$(awk '{print $1}' <<<"$ML" | tr -d '"')
-
-# A 50 Hz mode next to the main one, for PAL games (set-refresh switches to it).
 ML50=""
-if [ "$rate" != 50 ]; then
-    case "${w}x${h}" in
-        1280x720)  ML50='"1280x720_50R" 53.00 1280 1328 1360 1440 720 723 728 737 +hsync -vsync' ;;
-        1920x1080) ML50='"1920x1080_50R" 115.00 1920 1968 2000 2080 1080 1083 1088 1106 +hsync -vsync' ;;
-        2560x1440) ML50='"2560x1440_50R" 200.25 2560 2608 2640 2720 1440 1443 1448 1474 +hsync -vsync' ;;
-        3840x2160) ML50='"3840x2160_50R" 442.00 3840 3888 3920 4000 2160 2163 2168 2211 +hsync -vsync' ;;
-        *) command -v cvt >/dev/null 2>&1 && ML50=$(cvt "$w" "$h" 50 | sed -n 's/^Modeline //p') ;;
-    esac
-fi
+[ "$rate" != 50 ] && ML50=$(cvt_rb "$w" "$h" 50)
 MODE50=""; [ -n "$ML50" ] && MODE50=$(awk '{print $1}' <<<"$ML50" | tr -d '"')
 MODELINES="    Modeline ${ML}"
 MODES="\"${MODE}\""
@@ -263,6 +247,6 @@ EOF
 esac
 } > "$out"
 
-# Mode names for set-refresh (switching between 60 and 50 Hz).
+# Mode names for set-mode (the configured mode, and its 50 Hz twin for NVIDIA).
 printf 'XORG_MODE=%q\nXORG_MODE_50=%q\nXORG_OUTPUT_NAME=%q\n' "$MODE" "$MODE50" "${XORG_OUTPUT_NAME:-}" >> "$RUNTIME_ENV"
 log "Wrote $out (${GPU_TYPE}, ${MODE}${MODE50:+, PAL mode ${MODE50}})"

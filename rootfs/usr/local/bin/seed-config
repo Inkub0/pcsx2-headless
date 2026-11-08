@@ -40,7 +40,8 @@ fi
 apps=$sdir/apps.json
 [ -s "$apps" ] || cp "$defaults/apps.json" "$apps"
 # The PCSX2 entries are managed by the image: refresh them from the defaults on every start,
-# keeping a picture the user has set (not one of ours), and drop the old "Restart PCSX2" entry.
+# keeping a picture the user has set (not one of ours), and drop old entries ("Restart PCSX2",
+# "PCSX2 (PAL 50 Hz)": the PCSX2 entry now follows the client's frame rate).
 # Entries the user added are kept as they are.
 if updated=$(jq --slurpfile d "$defaults/apps.json" '
         ($d[0].apps | map(.name)) as $managed
@@ -50,7 +51,7 @@ if updated=$(jq --slurpfile d "$defaults/apps.json" '
                          | (first($cur[] | select(.name == $a.name) | ."image-path") // "") as $img
                          | if $img != "" and ($img | startswith("/usr/local/share/pcsx2-headless/") | not)
                            then ."image-path" = $img else . end))
-                  + [$cur[] | select(.name as $n | ($managed + ["Restart PCSX2"]) | index($n) | not)]
+                  + [$cur[] | select(.name as $n | ($managed + ["Restart PCSX2", "PCSX2 (PAL 50 Hz)"]) | index($n) | not)]
     ' "$apps" 2>/dev/null); then
     printf '%s\n' "$updated" > "$apps"
 else

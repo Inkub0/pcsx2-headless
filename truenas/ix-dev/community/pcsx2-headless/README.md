@@ -8,6 +8,6 @@ so you play from any [Moonlight](https://moonlight-stream.org) client.
 - The app takes over the GPU's display output, so only one display app (e.g. Steam Headless) can use a GPU at a time.
 - Point **PS2 BIOS Storage** at a folder with your BIOS dump and **PS2 Games Storage** at your ISO/CHD files.
 - Pair Moonlight at `https://<server-ip>:47990`, then start the **PCSX2** app from Moonlight.
-  For PAL games, start **PCSX2 (PAL 50 Hz)** and set Moonlight's frame rate to 50.
+  The screen follows Moonlight's resolution and frame rate: for PAL games, set Moonlight to 50 fps.
 
 No BIOS or games are included. You must dump them from hardware you own.

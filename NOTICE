@@ -11,6 +11,6 @@ Icon (assets/icon.png and assets/icon-512.png):
   Modified in November 2026: colours shifted to red (hue rotation), placed on a
   square canvas and resized to 256 and 512 pixels.
 
-Moonlight box art (box-ntsc.png and box-pal.png in the container image):
+Moonlight box art (box-art.png in the container image):
   Made from the icon above in November 2026: placed on a dark 600x800 canvas
-  with the text "NTSC 60 Hz" or "PAL 50 Hz" below it.
+  with the text "Headless" below it.

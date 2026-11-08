@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Sets the virtual screen to the Moonlight client's resolution and frame rate when a stream
+# starts, and back to the configured mode when it ends. Sunshine runs it from apps.json:
+#   set-mode client    use SUNSHINE_CLIENT_WIDTH / _HEIGHT / _FPS (set by Sunshine)
+#   set-mode default   the configured RESOLUTION at REFRESH_RATE
+# DISPLAY_MATCH: full (default: resolution and frame rate), refresh (frame rate only) or off.
+# AMD and Intel get an exact CVT mode added with xrandr. NVIDIA and the dummy driver cannot add
+# modes at run time, so they switch between the configured 60 Hz and 50 Hz modes.
+# It always exits 0, so a problem here can never stop a stream from starting.
+set -uo pipefail
+# shellcheck source=/usr/local/lib/pcsx2-headless/common.sh
+. /usr/local/lib/pcsx2-headless/common.sh
+load_runtime_env
+# Sunshine discards this command's output: send messages to the container log instead.
+[ -w "${EVENT_LOG:-}" ] && exec 2>>"$EVENT_LOG"
+
+match=${DISPLAY_MATCH:-full}
+match=${match,,}
+res=${RESOLUTION:-1920x1080}
+def_w=${res%x*} def_h=${res#*x} def_r=${REFRESH_RATE:-60}
+
+case ${1:-client} in
+    client)
+        case $match in
+            off|none|false|no) exit 0 ;;
+            refresh) w=$def_w h=$def_h ;;
+            full) w=${SUNSHINE_CLIENT_WIDTH:-$def_w} h=${SUNSHINE_CLIENT_HEIGHT:-$def_h} ;;
+            *) warn "DISPLAY_MATCH must be full, refresh or off (got '$match'); using full"
+               w=${SUNSHINE_CLIENT_WIDTH:-$def_w} h=${SUNSHINE_CLIENT_HEIGHT:-$def_h} ;;
+        esac
+        r=${SUNSHINE_CLIENT_FPS:-$def_r}
+        ;;
+    default) w=$def_w h=$def_h r=$def_r ;;
+    *) warn "set-mode: use 'client' or 'default' (got '$1')"; exit 0 ;;
+esac
+
+# Sanity checks: whole numbers in a sensible range, otherwise fall back to the configured mode.
+valid() { [[ $1 =~ ^[0-9]+$ ]] && (( $1 >= $2 && $1 <= $3 )); }
+if ! valid "$w" 640 7680 || ! valid "$h" 480 4320 || ! valid "$r" 24 240; then
+    warn "Unusable client mode ${w}x${h}@${r}; using ${def_w}x${def_h}@${def_r}"
+    w=$def_w h=$def_h r=$def_r
+fi
+
+# The output gen-xorg-conf chose (AMD/Intel). Otherwise the primary active output, or the
+# first active one (an active output has a position, e.g. "1920x1080+0+0").
+out=${XORG_OUTPUT_NAME:-}
+if [ -z "$out" ]; then
+    out=$(xrandr --query 2>/dev/null | awk '
+        ($2 == "connected" || $2 == "disconnected") && /[0-9]+x[0-9]+\+[0-9]+\+[0-9]+/ {
+            if (/ primary /) { print $1; found = 1; exit }
+            if (first == "") first = $1
+        }
+        END { if (!found && first != "") print first }')
+fi
+if [ -z "$out" ]; then
+    warn "set-mode: no active display found"
+    exit 0
+fi
+
+# Switch to one of the modes written into xorg.conf: 50 Hz for 50 fps clients, else the main one.
+use_configured() {
+    local mode=${XORG_MODE:-}
+    [ "$r" = 50 ] && [ -n "${XORG_MODE_50:-}" ] && mode=$XORG_MODE_50
+    [ -n "$mode" ] || { warn "No configured screen mode found; keeping the current one"; return; }
+    if xrandr --output "$out" --mode "$mode" 2>/dev/null; then
+        log "Screen set to $mode on $out"
+    else
+        warn "Could not switch $out to $mode; keeping the current mode"
+    fi
+}
+
+case ${GPU_TYPE:-} in
+    amd|intel) ;;
+    *) use_configured; exit 0 ;;
+esac
+
+ml=$(cvt_rb "$w" "$h" "$r")
+name=$(awk '{print $1}' <<<"$ml" | tr -d '"')
+# shellcheck disable=SC2086  # the modeline's numbers must be separate arguments
+if ! xrandr --query 2>/dev/null | awk '{print $1}' | grep -qxF "$name"; then
+    xrandr --newmode "$name" $(cut -d' ' -f2- <<<"$ml") 2>/dev/null || true
+fi
+xrandr --addmode "$out" "$name" 2>/dev/null || true
+if xrandr --output "$out" --mode "$name" 2>/dev/null; then
+    log "Screen set to ${w}x${h} at ${r} Hz ($name on $out)"
+else
+    warn "$out does not accept ${w}x${h} at ${r} Hz (too fast for the card or the cable?); using a configured mode"
+    use_configured
+fi
+exit 0
