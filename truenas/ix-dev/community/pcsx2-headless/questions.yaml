@@ -99,6 +99,22 @@ questions:
                 description: NVIDIA
               - value: "dummy"
                 description: No GPU (software rendering)
+        - variable: display_match
+          label: Match Moonlight's Screen Mode
+          description: |
+            When a stream starts, switch the screen to the resolution and frame rate Moonlight asks for
+            (Resolution and frame rate), only its frame rate, or keep the mode above (Off).
+          schema:
+            type: string
+            default: "full"
+            required: true
+            enum:
+              - value: "full"
+                description: Resolution and frame rate
+              - value: "refresh"
+                description: Frame rate only
+              - value: "off"
+                description: "Off"
         - variable: numa_node
           label: CPU Socket (NUMA Node)
           description: |

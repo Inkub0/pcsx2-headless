@@ -13,6 +13,7 @@ pcsx2:
   resolution: "1920x1080"
   gpu_type: dummy
   numa_node: auto
+  display_match: full
   tearfree: false
   covers: true
   covers_style: default
