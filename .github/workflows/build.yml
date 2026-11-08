@@ -14,7 +14,7 @@ on:
       - "assets/**"
   pull_request:
   schedule:
-    - cron: "17 4 * * 1"   # weekly rebuild picks up new PCSX2 and Sunshine releases
+    - cron: "17 4 1 * *"   # monthly rebuild of main for Debian package updates
   workflow_dispatch:
 
 permissions:

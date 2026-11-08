@@ -1,0 +1,45 @@
+name: Check upstream releases
+
+# Opens an issue when PCSX2 or Sunshine has a newer stable release than the
+# version pinned in the Dockerfile. Nothing is changed automatically.
+on:
+  schedule:
+    - cron: "41 5 2 * *"   # monthly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Compare pinned versions with the latest stable releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          open_titles=$(gh issue list --state open --limit 200 --json title --jq '.[].title')
+          check() {
+            local name=$1 repo=$2 arg=$3 pinned latest title body
+            pinned=$(sed -n "s/^ARG ${arg}=//p" Dockerfile)
+            latest=$(gh api "repos/$repo/releases/latest" --jq .tag_name)
+            echo "$name: pinned $pinned, latest stable $latest"
+            if [ "$pinned" = "$latest" ]; then return 0; fi
+            title="$name $latest is available (image has $pinned)"
+            if grep -Fq "$name $latest is available" <<<"$open_titles"; then
+              echo "An issue for $name $latest is already open"
+              return 0
+            fi
+            body=$(printf '%s\n\n%s\n\n%s\n' \
+              "A new stable release of $name is out: https://github.com/$repo/releases/tag/$latest" \
+              "To update, change \`ARG $arg\` in the Dockerfile to \`$latest\` and push." \
+              "Test the new \`sha-\` image, then tag a new release and close this issue.")
+            gh issue create --title "$title" --body "$body"
+          }
+          check PCSX2 PCSX2/pcsx2 PCSX2_VERSION
+          check Sunshine LizardByte/Sunshine SUNSHINE_VERSION

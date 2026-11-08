@@ -193,7 +193,7 @@ rootfs/usr/local/share/...      first-run PCSX2 and Sunshine settings
 rootfs/etc/supervisor/          service definitions
 truenas-custom-app.yaml         TrueNAS "Install via YAML" file
 truenas/ix-dev/community/...    TrueNAS catalog app definition
-.github/workflows/build.yml     builds and publishes the image (weekly rebuild for new releases)
+.github/workflows/build.yml     builds and publishes the image (monthly rebuild for Debian updates)
 ```
 
 ## Licence
