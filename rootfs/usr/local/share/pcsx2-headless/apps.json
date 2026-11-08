@@ -3,7 +3,7 @@
   "apps": [
     {
       "name": "PCSX2",
-      "image-path": "/usr/local/share/pcsx2-headless/icon.png",
+      "image-path": "/usr/local/share/pcsx2-headless/box-ntsc.png",
       "cmd": "",
       "prep-cmd": [
         { "do": "/usr/local/bin/set-refresh 60", "undo": "" }
@@ -14,7 +14,7 @@
     },
     {
       "name": "PCSX2 (PAL 50 Hz)",
-      "image-path": "/usr/local/share/pcsx2-headless/icon.png",
+      "image-path": "/usr/local/share/pcsx2-headless/box-pal.png",
       "cmd": "",
       "prep-cmd": [
         { "do": "/usr/local/bin/set-refresh 50", "undo": "/usr/local/bin/set-refresh 60" }
