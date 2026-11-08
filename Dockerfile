@@ -29,7 +29,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Runtime: Xorg (amdgpu, modesetting, dummy), Mesa (VAAPI + Vulkan), audio, input, Qt/xcb libs for the AppImage
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates curl jq crudini supervisor tini util-linux procps kmod pciutils \
+        ca-certificates curl jq crudini supervisor tini util-linux procps kmod pciutils numactl \
         xserver-xorg-core xserver-xorg-video-amdgpu xserver-xorg-video-dummy \
         xserver-xorg-input-libinput x11-xserver-utils x11-utils xauth openbox \
         libgl1 libegl1 libgles2 libglx-mesa0 libgl1-mesa-dri libgbm1 \

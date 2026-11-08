@@ -129,6 +129,7 @@ everything, including pairing.
 | `RESOLUTION` | `1920x1080` | `1280x720`, `1920x1080`, `2560x1440` or `3840x2160` |
 | `REFRESH_RATE` | `60` | Other rates need `cvt`, which isn't installed by default |
 | `GPU_TYPE` | `auto` | `auto`, `amd`, `intel`, `nvidia`, `dummy` (software only) |
+| `NUMA_NODE` | `auto` | Servers with two or more CPU sockets: run everything on the CPU the GPU is attached to (`auto`), on a given node (`0`, `1`, ...), or anywhere (`off`). No effect on single-socket machines |
 | `TEARFREE` | `true` | Removes tearing at the cost of a little latency |
 | `PUID` / `PGID` | `568` | User that runs PCSX2 and Sunshine and owns `/config` |
 | `DRI_CARD` | auto | Pick a GPU when there are several, e.g. `card1` |
