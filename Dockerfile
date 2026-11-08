@@ -46,10 +46,10 @@ RUN --mount=type=secret,id=github_token \
     set -eux; \
     auth=(); [ -s /run/secrets/github_token ] && auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)"); \
     rel=latest; [ "$SUNSHINE_VERSION" != latest ] && rel="tags/$SUNSHINE_VERSION"; \
-    url=$(curl -fsSL "${auth[@]}" "https://api.github.com/repos/LizardByte/Sunshine/releases/$rel" \
+    url=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/LizardByte/Sunshine/releases/$rel" \
           | jq -r '.assets[].browser_download_url | select(test("debian-?trixie[-_]amd64\\.deb$"))' | head -n1); \
     test -n "$url"; \
-    curl -fsSL -o /tmp/sunshine.deb "$url"; \
+    curl -fsSL --retry 5 --retry-all-errors -o /tmp/sunshine.deb "$url"; \
     apt-get update; \
     apt-get install -y --no-install-recommends /tmp/sunshine.deb; \
     echo "$url" > /etc/sunshine-source; \
@@ -60,10 +60,10 @@ RUN --mount=type=secret,id=github_token \
     set -eux; \
     auth=(); [ -s /run/secrets/github_token ] && auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)"); \
     rel=latest; [ "$PCSX2_VERSION" != latest ] && rel="tags/$PCSX2_VERSION"; \
-    url=$(curl -fsSL "${auth[@]}" "https://api.github.com/repos/PCSX2/pcsx2/releases/$rel" \
+    url=$(curl -fsSL --retry 5 --retry-all-errors "${auth[@]}" "https://api.github.com/repos/PCSX2/pcsx2/releases/$rel" \
           | jq -r '.assets[].browser_download_url | select(test("linux-appimage-x64-Qt\\.AppImage$"))' | head -n1); \
     test -n "$url"; \
-    curl -fsSL -o /tmp/pcsx2.AppImage "$url"; \
+    curl -fsSL --retry 5 --retry-all-errors -o /tmp/pcsx2.AppImage "$url"; \
     chmod +x /tmp/pcsx2.AppImage; \
     cd /opt; /tmp/pcsx2.AppImage --appimage-extract >/dev/null; \
     mv squashfs-root pcsx2; \
